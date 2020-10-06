@@ -1,5 +1,7 @@
 {
   "compilerOptions": {
+    "declaration": true,
+    "declarationMap": true,
     "esModuleInterop": true,
     "experimentalDecorators": true,
     "outDir": "lib",
@@ -8,5 +10,5 @@
     "strict": true,
     "target": "ES5"
   },
-  "exclude": ["node_modules/**/*", "test/**/*"]
+  "exclude": ["node_modules/**/*", "test/**/*", "lib/**/*"]
 }
