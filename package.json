@@ -1,0 +1,23 @@
+{
+  "name": "lawful-typeclasses",
+  "version": "0.1.0",
+  "description": "Interfaces on steroids. Inspired by principled type classes.",
+  "main": "lib/index.js",
+  "scripts": {
+    "build": "tsc",
+    "lint": "prettier -w .",
+    "prepare": "npm run build",
+    "test": "jest"
+  },
+  "keywords": [],
+  "author": "Gabriel Veiga <gabriellopvei@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/jest": "^26.0.14",
+    "jest": "^26.4.2",
+    "prettier": "^2.1.2",
+    "ts-jest": "^26.4.1",
+    "typescript": "^4.0.3"
+  },
+  "dependencies": {}
+}
