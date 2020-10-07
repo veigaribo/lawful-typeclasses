@@ -56,7 +56,7 @@ const eq = new Class({
   name: 'Eq',
   laws: all(
     obey((x) => {
-      // we expect comparison to oneself to be true
+      // we expect equality to be reflexive
       return x.equals(x)
     }),
   ),
