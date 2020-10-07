@@ -9,7 +9,7 @@ export const config = {
 
   set testSampleSize(value: number) {
     if (value < 0) {
-      throw new Error(`Test sample size cannot be negative (tried ${value}).`)
+      throw new Error(`Test sample size cannot be negative (got ${value}).`)
     }
 
     this[testSampleSizeKey] = Math.trunc(value)
