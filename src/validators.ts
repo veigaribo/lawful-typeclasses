@@ -11,7 +11,8 @@ type Predicate<T extends Instance> = (...data: T[]) => boolean
 
 type InstanceValidator = Validator<InstanceConstructor>
 
-const OBEY_CHECK_AMOUNT = 15
+const OBEY_CHECK_AMOUNT = 13
+const specialCases = [0, 1]
 
 // An Obey of T validates using instances of T
 export class Obeys<T extends InstanceConstructor> implements InstanceValidator {
@@ -23,6 +24,27 @@ export class Obeys<T extends InstanceConstructor> implements InstanceValidator {
     const paramsForInstance = instance.generateData.length
     const paramsForPredicate = predicate.length
 
+    const fail = (params: any[]): ValidationResult => {
+      return new Left(
+        `Predicate ${predicate.name} failed with params ${params
+          .map((p) => JSON.stringify(p))
+          .join(', ')}`,
+      )
+    }
+
+    for (var specialCase of specialCases) {
+      const params = arrayWithLength(paramsForPredicate).map(() => {
+        return instance.generateData(
+          // impure
+          ...new Array(paramsForInstance).fill(specialCase),
+        )
+      })
+
+      if (!predicate(...params)) {
+        return fail(params)
+      }
+    }
+
     for (var i = 0; i < OBEY_CHECK_AMOUNT; i++) {
       const params = arrayWithLength(paramsForPredicate).map(() => {
         return instance.generateData(
@@ -32,11 +54,7 @@ export class Obeys<T extends InstanceConstructor> implements InstanceValidator {
       })
 
       if (!predicate(...params)) {
-        return new Left(
-          `Predicate ${predicate.name} failed with params ${params
-            .map((p) => JSON.stringify(p))
-            .join(', ')}`,
-        )
+        return fail(params)
       }
     }
 

@@ -42,6 +42,40 @@ test('Obey returns false if the predicate does not hold', () => {
   expect(validator.check(SumInstance)).toBeInstanceOf(Left)
 })
 
+test('Obey tests with all params as 0', () => {
+  const zero = new SumInstance(0)
+
+  let wasZeroes = false
+
+  const validator = obey((a: SumInstance, b: SumInstance) => {
+    if ([a, b].every((x) => x.equals(zero))) {
+      wasZeroes = true
+    }
+
+    return !a.equals(b) && a.sum(zero).equals(b.sum(zero))
+  })
+
+  expect(validator.check(SumInstance)).toBeInstanceOf(Left)
+  expect(wasZeroes).toBe(true)
+})
+
+test('Obey tests with all params as 1', () => {
+  const one = new SumInstance(1)
+
+  let wasOnes = false
+
+  const validator = obey((a: SumInstance, b: SumInstance) => {
+    if ([a, b].every((x) => x.equals(one))) {
+      wasOnes = true
+    }
+
+    return a.sum(b).equals(b.sum(a))
+  })
+
+  expect(validator.check(SumInstance)).toBeInstanceOf(Right)
+  expect(wasOnes).toBe(true)
+})
+
 const implement = (key: string) => {
   return obey((a) => key in a)
 }
