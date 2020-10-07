@@ -1,6 +1,7 @@
-import { all, any, obey } from '../src/validators'
+import { config } from '../src/config'
 import { Instance } from '../src/instances'
 import { Left, Right } from '../src/utils'
+import { all, any, obey } from '../src/validators'
 
 class EqInstance implements Instance {
   constructor(public readonly x: number) {}
@@ -74,6 +75,25 @@ test('Obey tests with all params as 1', () => {
 
   expect(validator.check(SumInstance)).toBeInstanceOf(Right)
   expect(wasOnes).toBe(true)
+})
+
+test('Will run as many tests as it is set in the config', () => {
+  const qty = (config.testSampleSize = 10)
+
+  const predicate = jest.fn((a: SumInstance, b: SumInstance) => {
+    return a.sum(b).equals(b.sum(a))
+  })
+
+  const validator = obey(predicate)
+
+  expect(validator.check(SumInstance)).toBeInstanceOf(Right)
+  expect(predicate).toBeCalledTimes(qty)
+
+  predicate.mockClear()
+  const qty2 = (config.testSampleSize = 6)
+
+  expect(validator.check(SumInstance)).toBeInstanceOf(Right)
+  expect(predicate).toBeCalledTimes(qty2)
 })
 
 const implement = (key: string) => {

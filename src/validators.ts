@@ -1,5 +1,6 @@
-import { arrayWithLength, Either, Left, Right } from './utils'
+import { config } from './config'
 import { Instance, InstanceConstructor } from './instances'
+import { arrayWithLength, Either, Left, Right } from './utils'
 
 export type ValidationResult = Either<string, true>
 
@@ -11,8 +12,17 @@ type Predicate<T extends Instance> = (...data: T[]) => boolean
 
 type InstanceValidator = Validator<InstanceConstructor>
 
-const OBEY_CHECK_AMOUNT = 13
 const specialCases = [0, 1]
+
+const getRandomSampleSize = (): number => {
+  if (config.testSampleSize < specialCases.length) {
+    throw new Error(
+      `Test sample size cannot be ${config.testSampleSize}, there are ${specialCases.length} special cases that must be tested. that is the minimum acceptable value.`,
+    )
+  }
+
+  return config.testSampleSize - specialCases.length
+}
 
 // An Obey of T validates using instances of T
 export class Obeys<T extends InstanceConstructor> implements InstanceValidator {
@@ -45,7 +55,9 @@ export class Obeys<T extends InstanceConstructor> implements InstanceValidator {
       }
     }
 
-    for (var i = 0; i < OBEY_CHECK_AMOUNT; i++) {
+    const randomSampleSize = getRandomSampleSize()
+
+    for (var i = 0; i < randomSampleSize; i++) {
       const params = arrayWithLength(paramsForPredicate).map(() => {
         return instance.generateData(
           // impure
