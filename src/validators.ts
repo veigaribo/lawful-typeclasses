@@ -15,13 +15,15 @@ type InstanceValidator = Validator<InstanceConstructor>
 const specialCases = [0, 1]
 
 const getRandomSampleSize = (): number => {
-  if (config.testSampleSize < specialCases.length) {
+  const { testSampleSize } = config
+
+  if (testSampleSize < specialCases.length) {
     throw new Error(
-      `Test sample size cannot be ${config.testSampleSize}, there are ${specialCases.length} special cases that must be tested. that is the minimum acceptable value.`,
+      `Test sample size cannot be ${testSampleSize}, there are ${specialCases.length} special cases that must be tested. that is the minimum acceptable value.`,
     )
   }
 
-  return config.testSampleSize - specialCases.length
+  return testSampleSize - specialCases.length
 }
 
 // An Obey of T validates using instances of T
@@ -29,6 +31,12 @@ export class Obeys<T extends InstanceConstructor> implements InstanceValidator {
   constructor(public readonly param: Predicate<InstanceType<T>>) {}
 
   check(instance: T): ValidationResult {
+    const { skipValidations, generateRandom } = config
+
+    if (skipValidations) {
+      return new Right(true)
+    }
+
     const predicate = this.param
 
     const paramsForInstance = instance.generateData.length
@@ -60,7 +68,7 @@ export class Obeys<T extends InstanceConstructor> implements InstanceValidator {
       const params = arrayWithLength(paramsForPredicate).map(() => {
         return instance.generateData(
           // impure
-          ...arrayWithLength(paramsForInstance).map(Math.random),
+          ...arrayWithLength(paramsForInstance).map(generateRandom),
         )
       })
 

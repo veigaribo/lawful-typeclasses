@@ -1,3 +1,5 @@
+jest.mock('../src/config')
+
 import { config } from '../src/config'
 import { Instance } from '../src/instances'
 import { Left, Right } from '../src/utils'
@@ -24,6 +26,16 @@ class SumInstance extends EqInstance {
     return new SumInstance(x)
   }
 }
+
+const defaultGenerateRandom = config.generateRandom
+const defaultSkipValidations = config.skipValidations
+const defaultTestSampleSize = config.testSampleSize
+
+beforeEach(() => {
+  config.generateRandom = defaultGenerateRandom
+  config.skipValidations = defaultSkipValidations
+  config.testSampleSize = defaultTestSampleSize
+})
 
 test('Obey returns true if the predicate holds', () => {
   const validator = obey((a: SumInstance, b: SumInstance) => {
@@ -94,6 +106,44 @@ test('Will run as many tests as it is set in the config', () => {
 
   expect(validator.check(SumInstance)).toBeInstanceOf(Right)
   expect(predicate).toBeCalledTimes(qty2)
+})
+
+test('Will not run any validation if the config says to do so', () => {
+  config.skipValidations = true
+
+  const predicate = jest.fn((a: SumInstance, b: SumInstance) => {
+    return a.sum(b).equals(b.sum(a))
+  })
+
+  const validator = obey(predicate)
+
+  expect(validator.check(SumInstance)).toBeInstanceOf(Right)
+  expect(predicate).not.toBeCalled()
+})
+
+test('Will use the given generateRandom callable', () => {
+  const random = -(2 ** 0.5)
+  config.generateRandom = () => random
+
+  const randomInstance = new SumInstance(random)
+  // special cases
+  const zero = new SumInstance(0)
+  const one = new SumInstance(1)
+
+  let anythingOtherThanExpected = false
+
+  const validator = obey((a: SumInstance, b: SumInstance) => {
+    if (
+      ![a, b].every((x) => [zero, one, randomInstance].some(x.equals.bind(x)))
+    ) {
+      anythingOtherThanExpected = true
+    }
+
+    return a.sum(b).equals(b.sum(a))
+  })
+
+  expect(validator.check(SumInstance)).toBeInstanceOf(Right)
+  expect(anythingOtherThanExpected).toBe(false)
 })
 
 const implement = (key: string) => {

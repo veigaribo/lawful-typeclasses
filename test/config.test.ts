@@ -11,3 +11,15 @@ test('Will truncate valid testSampleSizes', () => {
 
   expect(config.testSampleSize).toBe(Math.trunc(value))
 })
+
+test('Will cast skipValidations to boolean', () => {
+  // @ts-ignore
+  config.skipValidations = {}
+
+  expect(config.skipValidations).toBe(true)
+
+  // @ts-ignore
+  config.skipValidations = ''
+
+  expect(config.skipValidations).toBe(false)
+})

@@ -1,10 +1,30 @@
-const testSampleSizeKey = Symbol('Test sample size')
+const testSampleSize = Symbol('Test sample size')
+const skipValidations = Symbol('Skip validations')
+const generateRandom = Symbol('Generate random')
 
 export const config = {
-  [testSampleSizeKey]: 15,
+  [generateRandom]: Math.random,
+  [skipValidations]: false,
+  [testSampleSize]: 15,
+
+  get generateRandom() {
+    return this[generateRandom]
+  },
+
+  set generateRandom(value: () => number) {
+    this[generateRandom] = value
+  },
+
+  get skipValidations() {
+    return this[skipValidations]
+  },
+
+  set skipValidations(value: boolean) {
+    this[skipValidations] = !!value
+  },
 
   get testSampleSize() {
-    return this[testSampleSizeKey]
+    return this[testSampleSize]
   },
 
   set testSampleSize(value: number) {
@@ -12,6 +32,6 @@ export const config = {
       throw new Error(`Test sample size cannot be negative (got ${value}).`)
     }
 
-    this[testSampleSizeKey] = Math.trunc(value)
+    this[testSampleSize] = Math.trunc(value)
   },
 }
