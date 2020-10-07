@@ -12,7 +12,7 @@ a bit confusedly, classes are JS objects and instances are JS classes.
 
 ### Classes
 
-A class is what defines the behavior that you want your other classes to
+A class is what defines the behavior that you want your instances to
 conform to.
 
 For example, let's say that you want to define a class of things that can be
@@ -47,9 +47,10 @@ const addable = new Class({
 })
 ```
 
-But, as you might have seen, we also expect our instances to implement an `#equals` method.
+But, as you might have seen, we also expect our instances to implement an
+`#equals` method.
 
-This could be another class:
+That could be another class:
 
 ```javascript
 const eq = new Class({
@@ -64,7 +65,7 @@ const eq = new Class({
 ```
 
 And then the Addable class may _extend_ Eq, meaning that, in order to be an
-instance of Addable, the class must also be an instance of Eq:
+instance of Addable, the JS class must also be an instance of Eq:
 
 ```javascript
 const addable = new Class({
@@ -98,8 +99,8 @@ class Number {
 ```
 
 The only extra step is to define a static method called `generateData`, that
-will take any number of random numbers as parameters and should return a
-random JS instance of the JS class.
+will take any number of random numbers in the range [0, 1] as parameters
+and should return a random JS instance of the JS class.
 
 ```javascript
 @instance(addable)
