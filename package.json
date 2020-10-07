@@ -13,7 +13,17 @@
     "type": "git",
     "url": "https://github.com/Veigaribo/lawful-typeclasses.git"
   },
-  "keywords": [],
+  "keywords": [
+    "type",
+    "class",
+    "typeclass",
+    "behavior",
+    "behaviour",
+    "law",
+    "lawful",
+    "principled",
+    "instance"
+  ],
   "author": "Gabriel Veiga <gabriellopvei@gmail.com>",
   "license": "MIT",
   "devDependencies": {
