@@ -45,7 +45,6 @@ export class Obeys<T extends InstanceConstructor> implements InstanceValidator {
     for (var specialCase of specialCases) {
       const params = arrayWithLength(paramsForPredicate).map(() => {
         return instance.generateData(
-          // impure
           ...new Array(paramsForInstance).fill(specialCase),
         )
       })
