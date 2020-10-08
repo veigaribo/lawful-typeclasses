@@ -38,7 +38,7 @@
   "dependencies": {},
   "husky": {
     "hooks": {
-      "pre-commit": "lint-staged"
+      "pre-commit": "lint-staged && jest test/readme.test.js"
     }
   },
   "lint-staged": {
