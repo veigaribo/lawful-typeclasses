@@ -1,6 +1,6 @@
 {
   "name": "lawful-typeclasses",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Interfaces on steroids. Inspired by principled type classes.",
   "main": "lib/index.js",
   "scripts": {
