@@ -1,14 +1,19 @@
 # Lawful Type Classes
 
 `lawful-typeclasses` is a library designed to provide a way of asserting
-the behavior of your JS classes.
+the behavior of your JavaScript classes.
 
 "Lawful" here refers to a characteristic of [principled type classes](https://degoes.net/articles/principled-typeclasses).
 
 ## What it does
 
 This library allows you to define two things: classes and instances. Perhaps
-a bit confusedly, classes are JS objects and instances are JS classes.
+a bit confusedly, classes are JavaScript objects and instances are
+JavaScript classes.
+
+We'll be referring to the JavaScript classes that implement the behavior of
+a type class (and are thus _instances_ of that class) as _constructors_ and
+to the instances of those JavaScript classes as _instance values_.
 
 ### Classes
 
@@ -27,7 +32,8 @@ const addable = new Class({
   name: 'Addable',
   // next, we define the properties we expect our instances to have
   // we'll start out by using the `all` function to say that, in order to
-  // be an Addable, the class must obey all of the following laws (not any)
+  // be an Addable, the constructor must obey all of the following laws
+  // (not any)
   laws: all(
     obey((x, y) => {
       // we expect addition to be commutative
@@ -65,7 +71,7 @@ const eq = new Class({
 ```
 
 And then the Addable class may _extend_ Eq, meaning that, in order to be an
-instance of Addable, the JS class must also be an instance of Eq:
+instance of Addable, the constructor must also be an instance of Eq:
 
 ```javascript
 const addable = new Class({
@@ -77,7 +83,7 @@ const addable = new Class({
 
 ### Instances
 
-Instances are JS classes that behave according to some (type) class.
+Instances are JavaScript classes that behave according to some (type) class.
 
 Using the Addable example above, one could almost define an instance as:
 
@@ -100,7 +106,7 @@ class Number {
 
 The only extra step is to define a static method called `generateData`, that
 will take any number of random numbers in the range [0, 1] as parameters
-and should return a random JS instance of the JS class.
+and should return a random instance value of the constructor.
 
 ```javascript
 @instance(addable)
@@ -116,12 +122,12 @@ class Number {
 
 ## How it works
 
-When you define your JS class using the `@instance` decorator, a sample of
-random JS instances of your JS class will be generated using your JS classes'
-`generateData`, and each property will be tested using those. If any of the
-laws fails to be asserted, an error is thrown, and you may be sure that the
-JS class in question is not an instance of the class you declared in the
-decorator.
+When you define your constructor using the `@instance` decorator, a sample
+of random instance values of your constructor will be generated using your
+constructor's `generateData`, and each property will be tested using those.
+If any of the laws fails to be asserted, an error is thrown, and you may be
+sure that the constructor in question is not an instance of the class you
+declared in the decorator.
 
 In case it passes, you may have a high confidence that it is.
 

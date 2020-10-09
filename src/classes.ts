@@ -5,11 +5,34 @@ import { all, obey, ValidationResult, Validator } from './validators'
 type Laws = Validator<Instance>
 
 export interface ClassOptions {
+  /** The name will be used to improve error messages. */
   name?: string
+  /** A list of classes that are prerequisites to this one. */
   extends?: Class[]
+  /** A validator that will check if a constructor is an instance of this class. */
   laws?: Laws
 }
 
+/**
+ * A class defines the behavior that your instances shall have.
+ *
+ * The behavior will be asserted using the given laws (if a given constructor is declared
+ * to be an instance of a given class, but it does not pass its validations, an error is
+ * thrown).
+ *
+ * A class may also extend other classes, so all their validators must pass as well.
+ *
+ * @example
+ * ```javascript
+ * const monoid = new Class({
+ *  name: 'Monoid',
+ *  extends: [eq],
+ *  laws: all(append, commutativity, associativity, identity)
+ * })
+ * ```
+ *
+ * @see {@link all}
+ */
 export class Class {
   public readonly parents: Class[]
   public readonly laws: Laws

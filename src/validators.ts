@@ -117,16 +117,53 @@ export class Any implements InstanceValidator {
   }
 }
 
+/**
+ * Defines a behavior that the instance values must follow.
+ *
+ * @param predicate - The function that, given any number of random instance values, shall return true.
+ *
+ * @example
+ * ```javascript
+ * obey(function commutativity(a, b) {
+ *  // this property shall hold for any values a and b
+ *  return a.add(b) === b.add(a)
+ * })
+ * ```
+ */
 export function obey<T extends InstanceConstructor>(
   predicate: Predicate<InstanceType<T>>,
 ) {
   return new Obeys<T>(predicate)
 }
 
+/**
+ * Compose multiple validators using a logical AND.
+ *
+ * @param laws - The individual validators that must be followed.
+ *
+ * @example
+ * ```javascript
+ * // assuming associativity, commutativity and identity are validators, this will return
+ * // another validator that demands every one of those laws to be obeyed
+ * all(associativity, commutativity, identity)
+ * ```
+ */
 export function all(...laws: InstanceValidator[]): InstanceValidator {
   return new All(laws)
 }
 
+/**
+ * Compose multiple validators using a logical OR.
+ *
+ * @param laws - The individual validators, where at least one must be followed.
+ *
+ * @example
+ * ```
+ * // assuming symmetry and antissymetry are validators, this will return another validator
+ * // that demands at least one of those laws to be obeyed
+ * any(symmetry, antisymmetry)
+ * ```
+ */
 export function any(...laws: InstanceValidator[]): InstanceValidator {
   return new Any(laws)
 }
