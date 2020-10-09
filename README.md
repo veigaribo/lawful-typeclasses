@@ -27,23 +27,22 @@ added:
 // our class is going to be an instance of Class
 const addable = new Class({
   // this is what I've decided to name my class
-  // this option is not necessary, but it helps in case something goes
-  // wrong
+  // this option is not necessary, but it helps to improve error messages
   name: 'Addable',
-  // next, we define the properties we expect our instances to have
+  // next, we define the properties we expect our instances to have.
   // we'll start out by using the `all` function to say that, in order to
   // be an Addable, the constructor must obey all of the following laws
-  // (not any)
+  // (not just any)
   laws: all(
-    obey((x, y) => {
-      // we expect addition to be commutative
+    // using named functions is not necessary, but it helps to improve error
+    // messages as well
+    obey(function commutativity(x, y) {
       const a = x.add(y)
       const b = y.add(x)
 
       return a.equals(b)
     }),
-    obey((x, y, z) => {
-      // we expect addition to be associative
+    obey(function associativity(x, y, z) {
       const a = x.add(y.add(z))
       const b = x.add(y).add(z)
 
@@ -62,8 +61,7 @@ That could be another class:
 const eq = new Class({
   name: 'Eq',
   laws: all(
-    obey((x) => {
-      // we expect equality to be reflexive
+    obey(function reflexivity(x) {
       return x.equals(x)
     }),
   ),
