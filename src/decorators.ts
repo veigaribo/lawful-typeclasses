@@ -1,5 +1,6 @@
 import { Class } from './classes'
 import { InstanceConstructor } from './instances'
+import { metadataKey } from './private'
 import { Right } from './utils'
 
 /**
@@ -34,6 +35,12 @@ export function instance<T extends InstanceConstructor>(
     const result = theClass.validate(constructor)
 
     if (result instanceof Right) {
+      if (constructor[metadataKey]) {
+        constructor[metadataKey]!.classIds.push(theClass.id)
+      } else {
+        constructor[metadataKey] = { classIds: [theClass.id] }
+      }
+
       return constructor
     }
 

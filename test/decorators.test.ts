@@ -1,6 +1,7 @@
 import { Class } from '../src/classes'
 import { instance } from '../src/decorators'
-import { Instance } from '../src/instances'
+import { Instance, InstanceConstructor } from '../src/instances'
+import { metadataKey } from '../src/private'
 import { all, obey } from '../src/validators'
 
 interface Eq extends Instance {
@@ -32,8 +33,9 @@ test('instance will throw if validation fails', () => {
   }).toThrow()
 })
 
-test('instance will be identity if validation succeeds', () => {
+test('instance will mark if validation succeeds', () => {
   expect(() => {
+    @instance(eq)
     class VNumber implements Eq {
       constructor(public readonly n: number) {}
 
@@ -48,5 +50,9 @@ test('instance will be identity if validation succeeds', () => {
 
     const n = new VNumber(Math.PI)
     expect(n instanceof VNumber).toBe(true)
+
+    expect((VNumber as InstanceConstructor)[metadataKey]).toMatchObject({
+      classIds: [eq.id],
+    })
   }).not.toThrow()
 })

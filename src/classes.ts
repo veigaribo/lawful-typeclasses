@@ -1,8 +1,8 @@
-import { Instance, InstanceConstructor } from './instances'
-import { Left, Right } from './utils'
-import { all, obey, ValidationResult, Validator } from './validators'
+import { InstanceConstructor } from './instances'
+import { Left } from './utils'
+import { all, ValidationResult, Validator } from './validators'
 
-type Laws = Validator<Instance>
+type Laws = Validator<InstanceConstructor>
 
 export interface ClassOptions {
   /** The name will be used to improve error messages. */
@@ -12,6 +12,8 @@ export interface ClassOptions {
   /** A validator that will check if a constructor is an instance of this class. */
   laws?: Laws
 }
+
+let idCounter = 0
 
 /**
  * A class defines the behavior that your instances shall have.
@@ -37,6 +39,7 @@ export class Class {
   public readonly parents: Class[]
   public readonly laws: Laws
   public readonly name: string
+  public readonly id: number
 
   constructor(options: ClassOptions) {
     const { extends: parents = [], laws = all(), name } = options
@@ -44,6 +47,7 @@ export class Class {
     this.parents = parents
     this.laws = laws
     this.name = name || 'Unnamed'
+    this.id = idCounter++
   }
 
   validate(instance: InstanceConstructor): ValidationResult {
