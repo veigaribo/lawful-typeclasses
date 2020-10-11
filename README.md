@@ -149,6 +149,7 @@ class Number {
   // ...
 }
 
-// will throw if anything goes bad
-instance(addable)(Number)
+// will throw if anything goes bad.
+// new instances shall be instantiated using the returned constructor
+const VNumber = instance(addable)(Number)
 ```

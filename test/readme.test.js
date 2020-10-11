@@ -59,11 +59,13 @@ test('Readme examples work', () => {
       }
     }
 
-    instance(addable)(Number)
+    // will throw if anything goes bad.
+    // new instances shall be instantiated using the returned constructor
+    const VNumber = instance(addable)(Number)
 
-    const n = new Number(50)
-    const is = isInstance(n, addable) // true, because Numbers are addable
+    const n = new VNumber(50)
 
-    expect(is).toBe(true)
+    const isAddable = isInstance(n, addable) // true, because Numbers are addable
+    expect(isAddable).toBe(true)
   }).not.toThrow()
 })

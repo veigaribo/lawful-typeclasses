@@ -4,11 +4,13 @@
     "declarationMap": true,
     "esModuleInterop": true,
     "experimentalDecorators": true,
+    "module": "CommonJS",
+    "moduleResolution": "node",
     "outDir": "lib",
     "rootDir": "src",
     "sourceMap": true,
     "strict": true,
-    "target": "ES5"
+    "target": "ES6"
   },
   "exclude": ["node_modules/**/*", "test/**/*", "lib/**/*", "**/__mocks__/**/*"]
 }

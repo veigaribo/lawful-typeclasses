@@ -1,5 +1,5 @@
 import { config } from './config'
-import { Instance, InstanceConstructor } from './instances'
+import { InstanceConstructor } from './instances'
 import { arrayWithLength, Maybe, MaybeError } from './utils'
 
 export type ValidationResult = MaybeError
@@ -8,7 +8,7 @@ export interface Validator<T> {
   check(instance: T): ValidationResult
 }
 
-type Predicate<T extends Instance> = (...data: T[]) => boolean
+type Predicate<T> = (...data: T[]) => boolean
 
 type InstanceValidator = Validator<InstanceConstructor>
 

@@ -1,5 +1,10 @@
 import { Class } from './classes'
-import { InstanceConstructor } from './instances'
+import {
+  InstanceConstructor,
+  InstanceMetadata,
+  KnownInstance,
+  KnownInstanceConstructor,
+} from './instances'
 import { metadataKey } from './private'
 import { MaybeError } from './utils'
 
@@ -30,24 +35,45 @@ import { MaybeError } from './utils'
  */
 export function instance<T extends InstanceConstructor>(
   theClass: Class,
-): (constructor: T) => T {
-  return function (constructor: T): T {
-    const result = theClass.validate(constructor)
+): (Constructor: T) => KnownInstanceConstructor {
+  return function (Constructor: T): KnownInstanceConstructor {
+    const result = theClass.validate(Constructor)
 
     if (result.isSuccess()) {
-      if (constructor[metadataKey]) {
-        constructor[metadataKey]!.classIds.push(theClass.id)
-      } else {
-        constructor[metadataKey] = { classIds: [theClass.id] }
+      const existingMetadata = (Constructor as any)[metadataKey]
+
+      const newIds = [
+        theClass.id,
+        ...theClass.parents.map((parent) => parent.id),
+      ]
+
+      const newMetadata = existingMetadata
+        ? { classIds: [...existingMetadata.classIds, ...newIds] }
+        : { classIds: [...newIds] }
+
+      class NewClass extends Constructor implements KnownInstance {
+        public [metadataKey]: InstanceMetadata
+        public static [metadataKey]: InstanceMetadata
+
+        constructor(...args: any[]) {
+          super(...args)
+
+          // insert the metadata into the values so isInstance may see it
+          this[metadataKey] = newMetadata!
+        }
       }
 
-      return constructor
+      // insert the metadata into the constructor so we may easily see it
+      // in later invocations and append things if necessary
+      NewClass[metadataKey] = newMetadata!
+
+      return NewClass
     }
 
     throw new Error(
       result.conjoin(
         MaybeError.fail(
-          `${constructor.name} is not an instance of ${theClass.name}.`,
+          `${Constructor.name} is not an instance of ${theClass.name}.`,
         ),
       ).value!,
     )

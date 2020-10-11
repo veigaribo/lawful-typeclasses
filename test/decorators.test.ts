@@ -1,10 +1,10 @@
 import { Class } from '../src/classes'
 import { instance } from '../src/decorators'
-import { Instance, InstanceConstructor } from '../src/instances'
+import { InstanceConstructor, KnownInstanceConstructor } from '../src/instances'
 import { metadataKey } from '../src/private'
 import { all, obey } from '../src/validators'
 
-interface Eq extends Instance {
+interface Eq {
   equals(other: this): boolean
 }
 
@@ -51,7 +51,7 @@ test('instance will mark if validation succeeds', () => {
     const n = new VNumber(Math.PI)
     expect(n instanceof VNumber).toBe(true)
 
-    expect((VNumber as InstanceConstructor)[metadataKey]).toMatchObject({
+    expect((VNumber as KnownInstanceConstructor)[metadataKey]).toMatchObject({
       classIds: [eq.id],
     })
   }).not.toThrow()

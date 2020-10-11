@@ -11,19 +11,21 @@ export interface InstanceMetadata {
  *
  * Those random instances will be used to check against the class laws.
  */
-export interface InstanceConstructor
-  extends Function,
-    Metadatable<InstanceMetadata> {
-  // @ts-ignore
-  new (...args: any[]): InstanceType<this>
+export interface InstanceConstructor extends Function {
+  new (...args: any[]): any
   generateData(...xs: number[]): InstanceType<this>
 }
 
-export interface Instance {}
+export interface KnownInstanceConstructor
+  extends InstanceConstructor,
+    Metadatable<InstanceMetadata> {
+  new (...args: any[]): KnownInstance
+}
 
-export function isInstance(value: Instance, theClass: Class) {
-  const metadata = (value.constructor as InstanceConstructor)[metadataKey]
-    ?.classIds
+export interface KnownInstance extends Metadatable<InstanceMetadata> {}
+
+export function isInstance(value: KnownInstance, theClass: Class) {
+  const metadata = value[metadataKey]?.classIds
 
   return !!metadata && metadata.includes(theClass.id)
 }

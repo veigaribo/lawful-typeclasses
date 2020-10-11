@@ -1,10 +1,9 @@
 jest.mock('../src/config')
 
 import { config } from '../src/config'
-import { Instance } from '../src/instances'
 import { all, any, obey } from '../src/validators'
 
-class EqInstance implements Instance {
+class EqInstance {
   constructor(public readonly x: number) {}
 
   equals(b: EqInstance): boolean {
