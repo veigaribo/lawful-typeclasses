@@ -1,7 +1,7 @@
 import { Class } from './classes'
 import { InstanceConstructor } from './instances'
 import { metadataKey } from './private'
-import { Right } from './utils'
+import { MaybeError } from './utils'
 
 /**
  * Declares a constructor to be an instance of the given class.
@@ -34,7 +34,7 @@ export function instance<T extends InstanceConstructor>(
   return function (constructor: T): T {
     const result = theClass.validate(constructor)
 
-    if (result instanceof Right) {
+    if (result.isSuccess()) {
       if (constructor[metadataKey]) {
         constructor[metadataKey]!.classIds.push(theClass.id)
       } else {
@@ -45,7 +45,11 @@ export function instance<T extends InstanceConstructor>(
     }
 
     throw new Error(
-      `${constructor.name} is not an instance of ${theClass.name}.\n\n${result.value}`,
+      result.conjoin(
+        MaybeError.fail(
+          `${constructor.name} is not an instance of ${theClass.name}.`,
+        ),
+      ).value!,
     )
   }
 }

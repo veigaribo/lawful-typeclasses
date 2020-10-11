@@ -2,34 +2,91 @@ export function arrayWithLength(n: number): Array<number> {
   return new Array(n).fill(0)
 }
 
-export abstract class Either<L, R> {
-  protected left: L | null = null
-  protected right: R | null = null
+export class Maybe<T> {
+  public readonly value: T | null
 
-  rightMap(f: (right: R) => R): Either<L, R> {
-    if (this.right !== null) {
-      return new Right(f(this.right))
+  constructor(value: T | null) {
+    this.value = value
+  }
+
+  map<U>(f: (x: T) => U): Maybe<U> {
+    if (this.value === null) {
+      return new Maybe<U>(null)
+    }
+
+    return new Maybe(f(this.value))
+  }
+}
+
+export class MaybeError extends Maybe<string> {
+  // error + error -> error
+  // error + not error -> error
+  // not error + not error -> not error
+  conjoin(error: MaybeError) {
+    if (this.isError()) {
+      if (error.isError()) {
+        return new MaybeError(MaybeError.appendText(this.value!, error.value!))
+      } else {
+        return this
+      }
     } else {
-      return this
+      if (error.isError()) {
+        return error
+      } else {
+        // whatever
+        return this
+      }
     }
   }
 
-  // kinda hard to work without this
-  get value() {
-    return this.left || this.right
+  // error + error -> error
+  // error + not error -> not error
+  // not error + not error -> not error
+  disjoin(error: MaybeError) {
+    if (this.isSuccess()) {
+      return this
+    } else {
+      if (error.isSuccess()) {
+        return error
+      } else {
+        return new MaybeError(MaybeError.appendText(this.value!, error.value!))
+      }
+    }
   }
-}
 
-export class Left<L, R> extends Either<L, R> {
-  constructor(value: L) {
-    super()
-    this.left = value
+  // not very functional
+  isSuccess() {
+    return this.value === null
   }
-}
 
-export class Right<L, R> extends Either<L, R> {
-  constructor(value: R) {
-    super()
-    this.right = value
+  // not very functional
+  isError() {
+    return !this.isSuccess()
+  }
+
+  static appendText(a: string, b: string) {
+    return `${b}\n\n${a}`.trimEnd()
+  }
+
+  static success() {
+    return new MaybeError(null)
+  }
+
+  static fail(text: string) {
+    return new MaybeError(text)
+  }
+
+  static foldConjoin(maybeErrors: MaybeError[]) {
+    return maybeErrors.reduce(
+      (acc, res) => res.conjoin(acc),
+      MaybeError.success(),
+    )
+  }
+
+  static foldDisjoin(maybeErrors: MaybeError[]) {
+    return maybeErrors.reduce(
+      (acc, res) => res.disjoin(acc),
+      MaybeError.fail(''),
+    )
   }
 }

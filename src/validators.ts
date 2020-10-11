@@ -1,8 +1,8 @@
 import { config } from './config'
 import { Instance, InstanceConstructor } from './instances'
-import { arrayWithLength, Either, Left, Right } from './utils'
+import { arrayWithLength, Maybe, MaybeError } from './utils'
 
-export type ValidationResult = Either<string, true>
+export type ValidationResult = MaybeError
 
 export interface Validator<T> {
   check(instance: T): ValidationResult
@@ -34,7 +34,7 @@ export class Obeys<T extends InstanceConstructor> implements InstanceValidator {
     const { skipValidations, generateRandom } = config
 
     if (skipValidations) {
-      return new Right(true)
+      return MaybeError.success()
     }
 
     const predicate = this.param
@@ -43,7 +43,7 @@ export class Obeys<T extends InstanceConstructor> implements InstanceValidator {
     const paramsForPredicate = predicate.length
 
     const fail = (params: any[]): ValidationResult => {
-      return new Left(
+      return MaybeError.fail(
         `Predicate ${predicate.name} failed with params ${params
           .map((p) => JSON.stringify(p))
           .join(', ')}`,
@@ -77,7 +77,7 @@ export class Obeys<T extends InstanceConstructor> implements InstanceValidator {
       }
     }
 
-    return new Right(true)
+    return MaybeError.success()
   }
 }
 
@@ -85,17 +85,13 @@ export class All implements InstanceValidator {
   constructor(public readonly param: InstanceValidator[]) {}
 
   check(instance: InstanceConstructor): ValidationResult {
-    const lefts = this.param
-      .map((val) => val.check(instance))
-      .filter((res) => res instanceof Left)
+    const result = MaybeError.foldConjoin(
+      this.param.map((val) => val.check(instance)),
+    )
 
-    return lefts.length
-      ? new Left(
-          `All constraint failed:\n\n${lefts
-            .map((left) => left.value)
-            .join('\n\n')}`,
-        )
-      : new Right(true)
+    return result.isError()
+      ? result.conjoin(MaybeError.fail(`All constraint failed:`))
+      : MaybeError.success()
   }
 }
 
@@ -103,17 +99,13 @@ export class Any implements InstanceValidator {
   constructor(public readonly param: InstanceValidator[]) {}
 
   check(instance: InstanceConstructor): ValidationResult {
-    const lefts = this.param
-      .map((val) => val.check(instance))
-      .filter((res) => res instanceof Left)
+    const result = MaybeError.foldDisjoin(
+      this.param.map((val) => val.check(instance)),
+    )
 
-    return lefts.length === this.param.length
-      ? new Left(
-          `Any constraint failed:\n\n${lefts
-            .map((left) => left.value)
-            .join('\n\n')}`,
-        )
-      : new Right(true)
+    return result.isError()
+      ? result.conjoin(MaybeError.fail(`Any constraint failed:`))
+      : MaybeError.success()
   }
 }
 

@@ -1,5 +1,5 @@
 import { InstanceConstructor } from './instances'
-import { Left } from './utils'
+import { MaybeError } from './utils'
 import { all, ValidationResult, Validator } from './validators'
 
 type Laws = Validator<InstanceConstructor>
@@ -51,15 +51,15 @@ export class Class {
   }
 
   validate(instance: InstanceConstructor): ValidationResult {
-    const parentLefts = this.parents
-      .map((parent) => parent.validate(instance))
-      .filter((result) => result instanceof Left)
+    const parentResults = MaybeError.foldConjoin(
+      this.parents.map((parent) => parent.validate(instance)),
+    )
 
-    if (parentLefts.length) {
-      return new Left(
-        `Class ${instance.name} fails the prerequisites to be a ${
-          this.name
-        }\n\n${parentLefts.map((left) => left.value).join('\n\n')}`,
+    if (parentResults.isError()) {
+      return parentResults.conjoin(
+        MaybeError.fail(
+          `Class ${instance.name} fails the prerequisites to be a ${this.name}`,
+        ),
       )
     }
 

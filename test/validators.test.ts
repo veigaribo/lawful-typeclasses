@@ -2,7 +2,6 @@ jest.mock('../src/config')
 
 import { config } from '../src/config'
 import { Instance } from '../src/instances'
-import { Left, Right } from '../src/utils'
 import { all, any, obey } from '../src/validators'
 
 class EqInstance implements Instance {
@@ -42,7 +41,7 @@ test('Obey returns true if the predicate holds', () => {
     return a.sum(b).equals(b.sum(a))
   })
 
-  expect(validator.check(SumInstance)).toBeInstanceOf(Right)
+  expect(validator.check(SumInstance).isSuccess()).toBe(true)
 })
 
 test('Obey returns false if the predicate does not hold', () => {
@@ -52,7 +51,7 @@ test('Obey returns false if the predicate does not hold', () => {
     return !a.equals(b) && a.sum(zero).equals(b.sum(zero))
   })
 
-  expect(validator.check(SumInstance)).toBeInstanceOf(Left)
+  expect(validator.check(SumInstance).isError()).toBe(true)
 })
 
 test('Obey tests with all params as 0', () => {
@@ -68,7 +67,7 @@ test('Obey tests with all params as 0', () => {
     return !a.equals(b) && a.sum(zero).equals(b.sum(zero))
   })
 
-  expect(validator.check(SumInstance)).toBeInstanceOf(Left)
+  expect(validator.check(SumInstance).isError()).toBe(true)
   expect(wasZeroes).toBe(true)
 })
 
@@ -85,7 +84,7 @@ test('Obey tests with all params as 1', () => {
     return a.sum(b).equals(b.sum(a))
   })
 
-  expect(validator.check(SumInstance)).toBeInstanceOf(Right)
+  expect(validator.check(SumInstance).isSuccess()).toBe(true)
   expect(wasOnes).toBe(true)
 })
 
@@ -98,13 +97,13 @@ test('Will run as many tests as it is set in the config', () => {
 
   const validator = obey(predicate)
 
-  expect(validator.check(SumInstance)).toBeInstanceOf(Right)
+  expect(validator.check(SumInstance).isSuccess()).toBe(true)
   expect(predicate).toBeCalledTimes(qty)
 
   predicate.mockClear()
   const qty2 = (config.testSampleSize = 6)
 
-  expect(validator.check(SumInstance)).toBeInstanceOf(Right)
+  expect(validator.check(SumInstance).isSuccess()).toBe(true)
   expect(predicate).toBeCalledTimes(qty2)
 })
 
@@ -117,7 +116,7 @@ test('Will not run any validation if the config says to do so', () => {
 
   const validator = obey(predicate)
 
-  expect(validator.check(SumInstance)).toBeInstanceOf(Right)
+  expect(validator.check(SumInstance).isSuccess()).toBe(true)
   expect(predicate).not.toBeCalled()
 })
 
@@ -142,7 +141,7 @@ test('Will use the given generateRandom callable', () => {
     return a.sum(b).equals(b.sum(a))
   })
 
-  expect(validator.check(SumInstance)).toBeInstanceOf(Right)
+  expect(validator.check(SumInstance).isSuccess()).toBe(true)
   expect(anythingOtherThanExpected).toBe(false)
 })
 
@@ -157,7 +156,7 @@ test('All returns true if all validators return true', () => {
     implement('toString'),
   )
 
-  expect(validator.check(SumInstance)).toBeInstanceOf(Right)
+  expect(validator.check(SumInstance).isSuccess()).toBe(true)
 })
 
 test('All returns false if some of the validators does not return true', () => {
@@ -167,19 +166,19 @@ test('All returns false if some of the validators does not return true', () => {
     implement('multiply'),
   )
 
-  expect(validator.check(SumInstance)).toBeInstanceOf(Left)
+  expect(validator.check(SumInstance).isError()).toBe(true)
 })
 
 test('All returns false if none of the validators return true', () => {
   const validator = all(implement('a'), implement('b'), implement('c'))
 
-  expect(validator.check(SumInstance)).toBeInstanceOf(Left)
+  expect(validator.check(SumInstance).isError()).toBe(true)
 })
 
 test('All returns true if no validators are expected', () => {
   const validator = all()
 
-  expect(validator.check(SumInstance)).toBeInstanceOf(Right)
+  expect(validator.check(SumInstance).isSuccess()).toBe(true)
 })
 
 test('Any returns true if all validators return true', () => {
@@ -189,7 +188,7 @@ test('Any returns true if all validators return true', () => {
     implement('toString'),
   )
 
-  expect(validator.check(SumInstance)).toBeInstanceOf(Right)
+  expect(validator.check(SumInstance).isSuccess()).toBe(true)
 })
 
 test('Any returns true if only some of the validators return true', () => {
@@ -199,19 +198,19 @@ test('Any returns true if only some of the validators return true', () => {
     implement('multiply'),
   )
 
-  expect(validator.check(SumInstance)).toBeInstanceOf(Right)
+  expect(validator.check(SumInstance).isSuccess()).toBe(true)
 })
 
 test('Any returns false if none of the validators return true', () => {
   const validator = any(implement('a'), implement('b'), implement('c'))
 
-  expect(validator.check(SumInstance)).toBeInstanceOf(Left)
+  expect(validator.check(SumInstance).isError()).toBe(true)
 })
 
 test('Any returns false if no validators are expected', () => {
   const validator = any()
 
-  expect(validator.check(SumInstance)).toBeInstanceOf(Left)
+  expect(validator.check(SumInstance).isError()).toBe(true)
 })
 
 test('Using higher-order validators as argument to another works as expected', () => {
@@ -221,7 +220,7 @@ test('Using higher-order validators as argument to another works as expected', (
     any(implement('equals'), implement('nequals')),
   )
 
-  expect(validator1.check(SumInstance)).toBeInstanceOf(Right)
+  expect(validator1.check(SumInstance).isSuccess()).toBe(true)
 
   const validator2 = any(
     all(implement('sum'), implement('multiply'), implement('divide')),
@@ -229,7 +228,7 @@ test('Using higher-order validators as argument to another works as expected', (
     all(implement('sum'), implement('equals')),
   )
 
-  expect(validator2.check(SumInstance)).toBeInstanceOf(Right)
+  expect(validator2.check(SumInstance).isSuccess()).toBe(true)
 
   const validator3 = all(
     implement('sum'),
@@ -237,7 +236,7 @@ test('Using higher-order validators as argument to another works as expected', (
     any(implement('multiply'), implement('divide'), implement('raise')),
   )
 
-  expect(validator3.check(SumInstance)).toBeInstanceOf(Left)
+  expect(validator3.check(SumInstance).isError()).toBe(true)
 
   const validator4 = all(
     any(all(any(implement('sum'), implement('multiply')))),
@@ -245,5 +244,5 @@ test('Using higher-order validators as argument to another works as expected', (
     implement('map'),
   )
 
-  expect(validator4.check(SumInstance)).toBeInstanceOf(Left)
+  expect(validator4.check(SumInstance).isError()).toBe(true)
 })
