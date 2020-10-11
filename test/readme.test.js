@@ -1,6 +1,6 @@
 test('Readme examples work', () => {
   expect(() => {
-    const { Class, all, instance, obey } = require('../lib/index')
+    const { Class, all, instance, isInstance, obey } = require('../lib/index')
 
     const eq = new Class({
       name: 'Eq',
@@ -60,5 +60,10 @@ test('Readme examples work', () => {
     }
 
     instance(addable)(Number)
+
+    const n = new Number(50)
+    const is = isInstance(n, addable) // true, because Numbers are addable
+
+    expect(is).toBe(true)
   }).not.toThrow()
 })

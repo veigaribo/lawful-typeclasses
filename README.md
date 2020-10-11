@@ -104,12 +104,12 @@ class Number {
 
 The only extra step is to define a static method called `generateData`, that
 will take any number of random numbers in the range [0, 1] as parameters
-and should return a random instance value of the constructor.
+and should return a random instance value.
 
 ```javascript
 @instance(addable)
 class Number {
-  ...
+  // ...
 
   static generateData(n) {
     // this is quite a trivial example, we just wrap the n
@@ -118,14 +118,24 @@ class Number {
 }
 ```
 
+## Checking
+
+You may also check whether a value is of an instance of a class using the
+`isInstance` function:
+
+```javascript
+const n = new Number(50)
+isInstance(n, addable) // true, because Numbers are addable
+```
+
 ## How it works
 
 When you define your constructor using the `@instance` decorator, a sample
-of random instance values of your constructor will be generated using your
-constructor's `generateData`, and each property will be tested using those.
-If any of the laws fails to be asserted, an error is thrown, and you may be
-sure that the constructor in question is not an instance of the class you
-declared in the decorator.
+of random instance values will be generated using your constructor's
+`generateData`, and each property will be tested using those. If any of the
+laws fails to be asserted, an error is thrown, and you may be sure that the
+constructor in question is not an instance of the class you declared in the
+decorator.
 
 In case it passes, you may have a high confidence that it is.
 
@@ -136,7 +146,7 @@ function:
 
 ```javascript
 class Number {
-  ...
+  // ...
 }
 
 // will throw if anything goes bad
