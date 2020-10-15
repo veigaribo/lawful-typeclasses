@@ -36,7 +36,7 @@ beforeEach(() => {
 })
 
 test('Obey returns true if the predicate holds', () => {
-  const validator = obey((a: SumInstance, b: SumInstance) => {
+  const validator = obey((Instance, a: SumInstance, b: SumInstance) => {
     return a.sum(b).equals(b.sum(a))
   })
 
@@ -46,7 +46,7 @@ test('Obey returns true if the predicate holds', () => {
 test('Obey returns false if the predicate does not hold', () => {
   const zero = new SumInstance(0)
 
-  const validator = obey((a: SumInstance, b: SumInstance) => {
+  const validator = obey((Instance, a: SumInstance, b: SumInstance) => {
     return !a.equals(b) && a.sum(zero).equals(b.sum(zero))
   })
 
@@ -58,7 +58,7 @@ test('Obey tests with all params as 0', () => {
 
   let wasZeroes = false
 
-  const validator = obey((a: SumInstance, b: SumInstance) => {
+  const validator = obey((Instance, a: SumInstance, b: SumInstance) => {
     if ([a, b].every((x) => x.equals(zero))) {
       wasZeroes = true
     }
@@ -75,7 +75,7 @@ test('Obey tests with all params as 1', () => {
 
   let wasOnes = false
 
-  const validator = obey((a: SumInstance, b: SumInstance) => {
+  const validator = obey((Instance, a: SumInstance, b: SumInstance) => {
     if ([a, b].every((x) => x.equals(one))) {
       wasOnes = true
     }
@@ -90,7 +90,7 @@ test('Obey tests with all params as 1', () => {
 test('Will run as many tests as it is set in the config', () => {
   const qty = (config.testSampleSize = 10)
 
-  const predicate = jest.fn((a: SumInstance, b: SumInstance) => {
+  const predicate = jest.fn((Instance, a: SumInstance, b: SumInstance) => {
     return a.sum(b).equals(b.sum(a))
   })
 
@@ -109,7 +109,7 @@ test('Will run as many tests as it is set in the config', () => {
 test('Will not run any validation if the config says to do so', () => {
   config.skipValidations = true
 
-  const predicate = jest.fn((a: SumInstance, b: SumInstance) => {
+  const predicate = jest.fn((Instance, a: SumInstance, b: SumInstance) => {
     return a.sum(b).equals(b.sum(a))
   })
 
@@ -130,7 +130,7 @@ test('Will use the given generateRandom callable', () => {
 
   let anythingOtherThanExpected = false
 
-  const validator = obey((a: SumInstance, b: SumInstance) => {
+  const validator = obey((Instance, a: SumInstance, b: SumInstance) => {
     if (
       ![a, b].every((x) => [zero, one, randomInstance].some(x.equals.bind(x)))
     ) {
@@ -144,8 +144,24 @@ test('Will use the given generateRandom callable', () => {
   expect(anythingOtherThanExpected).toBe(false)
 })
 
+test('Will provide the Instance constructor as the first parameter', () => {
+  class StaticSumInstance extends SumInstance {
+    static sum(x: StaticSumInstance, y: StaticSumInstance) {
+      return x.sum(y)
+    }
+
+    static generateData(n: number) {
+      return new StaticSumInstance(n)
+    }
+  }
+
+  const validator = obey((Instance: typeof StaticSumInstance, a, b) => {
+    return Instance.sum(a, b).equals(Instance.sum(a, b))
+  })
+})
+
 const implement = (key: string) => {
-  return obey((a) => key in a)
+  return obey((Instance, a) => key in a)
 }
 
 test('All returns true if all validators return true', () => {

@@ -36,13 +36,15 @@ const addable = new Class({
   laws: all(
     // using named functions is not necessary, but it helps to improve error
     // messages as well
-    obey(function commutativity(x, y) {
+    // the first parameter is the instance constructor itself, the others are
+    // random values of that constructor
+    obey(function commutativity(Instance, x, y) {
       const a = x.add(y)
       const b = y.add(x)
 
       return a.equals(b)
     }),
-    obey(function associativity(x, y, z) {
+    obey(function associativity(Instance, x, y, z) {
       const a = x.add(y.add(z))
       const b = x.add(y).add(z)
 
@@ -61,7 +63,7 @@ That could be another class:
 const eq = new Class({
   name: 'Eq',
   laws: all(
-    obey(function reflexivity(x) {
+    obey(function reflexivity(Instance, x) {
       return x.equals(x)
     }),
   ),
@@ -75,7 +77,7 @@ instance of Addable, the constructor must also be an instance of Eq:
 const addable = new Class({
   name: 'Addable',
   extends: [eq],
-  laws: ...
+  laws: // ...
 })
 ```
 

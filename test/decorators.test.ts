@@ -10,8 +10,8 @@ interface Eq {
 
 const eq = new Class({
   laws: all(
-    obey((instance: Eq) => {
-      return instance.equals(instance)
+    obey((Instance, value: Eq) => {
+      return value.equals(value)
     }),
   ),
 })

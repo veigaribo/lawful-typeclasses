@@ -17,7 +17,7 @@ interface Show {
 
 const eq = new Class({
   laws: all(
-    obey((instance: Eq) => {
+    obey((Instance, instance: Eq) => {
       return instance.equals(instance)
     }),
   ),
@@ -25,7 +25,7 @@ const eq = new Class({
 
 const neq = new Class({
   laws: all(
-    obey((instance: Neq) => {
+    obey((Instance, instance: Neq) => {
       return !instance.nequals(instance)
     }),
   ),
@@ -33,7 +33,7 @@ const neq = new Class({
 
 const show = new Class({
   laws: all(
-    obey((instance: Show) => {
+    obey((Instance, instance: Show) => {
       return instance.show() === undefined
     }),
   ),
@@ -105,7 +105,7 @@ interface Semigroup extends Eq {
 const semigroup = new Class({
   extends: [eq],
   laws: all(
-    obey((x: Semigroup, y: Semigroup, z: Semigroup) => {
+    obey((Instance, x: Semigroup, y: Semigroup, z: Semigroup) => {
       return x
         .add(y)
         .add(z)

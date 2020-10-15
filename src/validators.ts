@@ -8,7 +8,10 @@ export interface Validator<T> {
   check(instance: T): ValidationResult
 }
 
-type Predicate<T> = (...data: T[]) => boolean
+type Predicate<T extends InstanceConstructor> = (
+  Instance: T,
+  ...data: InstanceType<T>[]
+) => boolean
 
 type InstanceValidator = Validator<InstanceConstructor>
 
@@ -28,9 +31,9 @@ const getRandomSampleSize = (): number => {
 
 // An Obey of T validates using instances of T
 export class Obeys<T extends InstanceConstructor> implements InstanceValidator {
-  constructor(public readonly param: Predicate<InstanceType<T>>) {}
+  constructor(public readonly param: Predicate<T>) {}
 
-  check(instance: T): ValidationResult {
+  check(Instance: T): ValidationResult {
     const { skipValidations, generateRandom } = config
 
     if (skipValidations) {
@@ -39,8 +42,9 @@ export class Obeys<T extends InstanceConstructor> implements InstanceValidator {
 
     const predicate = this.param
 
-    const paramsForInstance = instance.generateData.length
-    const paramsForPredicate = predicate.length
+    const paramsForInstance = Instance.generateData.length
+    // the first parameter is the instance itself
+    const paramsForPredicate = predicate.length - 1
 
     const fail = (params: any[]): ValidationResult => {
       return MaybeError.fail(
@@ -52,12 +56,12 @@ export class Obeys<T extends InstanceConstructor> implements InstanceValidator {
 
     for (var specialCase of specialCases) {
       const params = arrayWithLength(paramsForPredicate).map(() => {
-        return instance.generateData(
+        return Instance.generateData(
           ...new Array(paramsForInstance).fill(specialCase),
         )
       })
 
-      if (!predicate(...params)) {
+      if (!predicate(Instance, ...params)) {
         return fail(params)
       }
     }
@@ -66,13 +70,13 @@ export class Obeys<T extends InstanceConstructor> implements InstanceValidator {
 
     for (var i = 0; i < randomSampleSize; i++) {
       const params = arrayWithLength(paramsForPredicate).map(() => {
-        return instance.generateData(
+        return Instance.generateData(
           // impure
           ...arrayWithLength(paramsForInstance).map(generateRandom),
         )
       })
 
-      if (!predicate(...params)) {
+      if (!predicate(Instance, ...params)) {
         return fail(params)
       }
     }
@@ -122,9 +126,7 @@ export class Any implements InstanceValidator {
  * })
  * ```
  */
-export function obey<T extends InstanceConstructor>(
-  predicate: Predicate<InstanceType<T>>,
-) {
+export function obey<T extends InstanceConstructor>(predicate: Predicate<T>) {
   return new Obeys<T>(predicate)
 }
 
