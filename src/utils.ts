@@ -22,35 +22,30 @@ export class MaybeError extends Maybe<string> {
   // error + error -> error
   // error + not error -> error
   // not error + not error -> not error
-  conjoin(error: MaybeError) {
-    if (this.isError()) {
-      if (error.isError()) {
-        return new MaybeError(MaybeError.appendText(this.value!, error.value!))
+  conjoin(other: MaybeError) {
+    if (other.isError()) {
+      if (this.isError()) {
+        return new MaybeError(MaybeError.appendText(this.value!, other.value!))
       } else {
-        return this
+        return other
       }
     } else {
-      if (error.isError()) {
-        return error
-      } else {
-        // whatever
-        return this
-      }
+      return this
     }
   }
 
   // error + error -> error
   // error + not error -> not error
   // not error + not error -> not error
-  disjoin(error: MaybeError) {
-    if (this.isSuccess()) {
-      return this
-    } else {
-      if (error.isSuccess()) {
-        return error
+  disjoin(other: MaybeError) {
+    if (other.isError()) {
+      if (this.isError()) {
+        return new MaybeError(MaybeError.appendText(this.value!, other.value!))
       } else {
-        return new MaybeError(MaybeError.appendText(this.value!, error.value!))
+        return this
       }
+    } else {
+      return other
     }
   }
 
