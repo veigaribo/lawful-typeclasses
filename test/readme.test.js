@@ -1,6 +1,13 @@
 test('Readme examples work', () => {
   expect(() => {
-    const { Class, all, instance, isInstance, obey } = require('../lib/index')
+    const {
+      Class,
+      all,
+      instance,
+      isInstance,
+      obey,
+      validate,
+    } = require('../lib/index')
 
     const eq = new Class({
       name: 'Eq',
@@ -64,6 +71,9 @@ test('Readme examples work', () => {
     // will throw if anything goes bad.
     // new instances shall be instantiated using the returned constructor
     const VNumber = instance(addable)(Number)
+
+    // will throw and Error if it fails
+    validate(VNumber)
 
     const n = new VNumber(50)
 

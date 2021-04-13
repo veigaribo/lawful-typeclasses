@@ -50,19 +50,19 @@ export class Class {
     this.id = idCounter++
   }
 
+  /**
+   * Checks if something is an instance of this class, not taking parents into
+   * account.
+   *
+   * This is probably not what you're looking for: If you want to properly check
+   * if something is an instance of a class, check out the `validate` procedure.
+   *
+   * @param instance
+   * @returns
+   *
+   * @see {@link validate}
+   */
   validate(instance: InstanceConstructor): ValidationResult {
-    const parentResults = MaybeError.foldConjoin(
-      this.parents.map((parent) => parent.validate(instance)),
-    )
-
-    if (parentResults.isError()) {
-      return parentResults.conjoin(
-        MaybeError.fail(
-          `Class ${instance.name} fails the prerequisites to be a ${this.name}`,
-        ),
-      )
-    }
-
     return this.laws.check(instance)
   }
 

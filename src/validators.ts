@@ -1,6 +1,6 @@
 import { config } from './config'
 import { InstanceConstructor } from './instances'
-import { arrayWithLength, Maybe, MaybeError } from './utils'
+import { arrayWithLength, MaybeError } from './utils'
 
 export type ValidationResult = MaybeError
 

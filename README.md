@@ -15,6 +15,10 @@ We'll be referring to the JavaScript classes that implement the behavior of
 a type class (and are thus _instances_ of that class) as _constructors_ and
 to the instances of those JavaScript classes as _instance values_.
 
+What this library then allows you to do is to check if every constructor follows
+the rules defined in the class, allowing you to modularize your tests in a neat
+way.
+
 ### Classes
 
 A class is what defines the behavior that you want your instances to
@@ -120,6 +124,14 @@ class Number {
 }
 ```
 
+With that done, you need only to call `validate` on the instance constructor and
+some tests will run. You should call this at some point in your tests.
+
+```javascript
+// will throw and Error if it fails
+validate(Number)
+```
+
 ## Checking
 
 You may also check whether a value is of an instance of a class using the
@@ -132,12 +144,17 @@ isInstance(n, addable) // true, because Numbers are addable
 
 ## How it works
 
-When you define your constructor using the `@instance` decorator, a sample
-of random instance values will be generated using your constructor's
-`generateData`, and each property will be tested using those. If any of the
-laws fails to be asserted, an error is thrown, and you may be sure that the
-constructor in question is not an instance of the class you declared in the
-decorator.
+When you define your constructor using the `@instance` decorator, some metadata
+will be injected into it and into every value it produces. That metadata will
+be used to both run the proper validations during `validate` and also to allow
+the `isInstance` to work.
+
+When `validate` is called, for each class that the constructor should be an
+instance of, a sample of random instance values will be generated using your
+constructor's `generateData`, and each class property will be tested using those.
+If any of the laws fails to be asserted, an error is thrown, and you may be sure
+that the constructor in question is not an instance of the class you declared in
+the decorator.
 
 In case it passes, you may have a high confidence that it is.
 
@@ -151,7 +168,8 @@ class Number {
   // ...
 }
 
-// will throw if anything goes bad.
 // new instances shall be instantiated using the returned constructor
 const VNumber = instance(addable)(Number)
+
+validate(VNumber)
 ```

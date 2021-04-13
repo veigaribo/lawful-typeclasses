@@ -1,6 +1,6 @@
 import { Class } from '../src/classes'
 import { instance } from '../src/decorators'
-import { isInstance, KnownInstance } from '../src/instances'
+import { isInstance, validate } from '../src/instances'
 import { all, obey } from '../src/validators'
 
 interface Eq {
@@ -39,6 +39,10 @@ const show = new Class({
   ),
 })
 
+const showEq = new Class({
+  extends: [eq, show],
+})
+
 test('isInstance returns whether the value is an instance of the class', () => {
   @instance(eq)
   @instance(show)
@@ -56,10 +60,32 @@ test('isInstance returns whether the value is an instance of the class', () => {
     }
   }
 
-  const showNumber = new VNumber(6) as KnownInstance
+  const showNumber = new VNumber(6)
 
   expect(isInstance(showNumber, eq)).toBe(true)
   expect(isInstance(showNumber, show)).toBe(true)
+  expect(isInstance(showNumber, neq)).toBe(false)
+})
+
+test('isInstance returns false if the value is not of an instance of anything', () => {
+  class VNumber implements Eq {
+    constructor(public readonly n: number) {}
+
+    equals(another: VNumber) {
+      return this.n === another.n
+    }
+
+    show() {}
+
+    static generateData(x: number) {
+      return new VNumber(x)
+    }
+  }
+
+  const showNumber = new VNumber(6)
+
+  expect(isInstance(showNumber, eq)).toBe(false)
+  expect(isInstance(showNumber, show)).toBe(false)
   expect(isInstance(showNumber, neq)).toBe(false)
 })
 
@@ -86,8 +112,8 @@ test('isInstance works for inherited constructors', () => {
     }
   }
 
-  const eqable = new Eqable(20) as KnownInstance
-  const showable = new Showable(66) as KnownInstance
+  const eqable = new Eqable(20)
+  const showable = new Showable(66)
 
   expect(isInstance(eqable, show)).toBe(true)
   expect(isInstance(eqable, eq)).toBe(true)
@@ -132,9 +158,142 @@ test('isInstance works for inherited classes', () => {
     }
   }
 
-  const nadd = new NAddition(20) as KnownInstance
+  const nadd = new NAddition(20)
 
   expect(isInstance(nadd, semigroup)).toBe(true)
   expect(isInstance(nadd, eq)).toBe(true)
   expect(isInstance(nadd, neq)).toBe(false)
+})
+
+test('validate will throw if validation fails', () => {
+  @instance(eq)
+  @instance(show)
+  class VNumber implements Eq {
+    constructor(public readonly n: number) {}
+
+    equals(another: VNumber) {
+      return this.n === another.n + 1
+    }
+
+    show() {}
+
+    static generateData(x: number) {
+      return new VNumber(x)
+    }
+  }
+
+  expect(() => {
+    validate(VNumber)
+  }).toThrow()
+})
+
+test('validate will not throw if validation succeeds', () => {
+  @instance(eq)
+  @instance(show)
+  class VNumber implements Eq {
+    constructor(public readonly n: number) {}
+
+    equals(another: VNumber) {
+      return this.n === another.n
+    }
+
+    show() {}
+
+    static generateData(x: number) {
+      return new VNumber(x)
+    }
+  }
+
+  expect(() => {
+    validate(VNumber)
+  }).not.toThrow()
+})
+
+test('validate will throw if a parent class fails', () => {
+  @instance(showEq)
+  class VNumber implements Eq {
+    constructor(public readonly n: number) {}
+
+    equals(another: VNumber) {
+      return this.n === another.n + 1
+    }
+
+    show() {}
+
+    static generateData(x: number) {
+      return new VNumber(x)
+    }
+  }
+
+  expect(() => {
+    validate(VNumber)
+  }).toThrow()
+})
+
+test('validate will not throw if no parent class fails', () => {
+  @instance(showEq)
+  class VNumber implements Eq {
+    constructor(public readonly n: number) {}
+
+    equals(another: VNumber) {
+      return this.n === another.n
+    }
+
+    show() {}
+
+    static generateData(x: number) {
+      return new VNumber(x)
+    }
+  }
+
+  expect(() => {
+    validate(VNumber)
+  }).not.toThrow()
+})
+
+test('validate throw if the value is not an instance of anything', () => {
+  class VNumber implements Eq {
+    constructor(public readonly n: number) {}
+
+    equals(another: VNumber) {
+      return this.n === another.n
+    }
+
+    show() {}
+
+    static generateData(x: number) {
+      return new VNumber(x)
+    }
+  }
+
+  expect(() => {
+    validate(VNumber)
+  }).toThrow()
+})
+
+test('validate will not check any one class more than once', () => {
+  const showSpy = jest.spyOn(show.laws, 'check')
+  const eqSpy = jest.spyOn(eq.laws, 'check')
+
+  @instance(showEq)
+  @instance(show)
+  @instance(eq)
+  class VNumber implements Eq {
+    constructor(public readonly n: number) {}
+
+    equals(another: VNumber) {
+      return this.n === another.n
+    }
+
+    show() {}
+
+    static generateData(x: number) {
+      return new VNumber(x)
+    }
+  }
+
+  validate(VNumber)
+
+  expect(showSpy).toBeCalledTimes(1)
+  expect(eqSpy).toBeCalledTimes(1)
 })
