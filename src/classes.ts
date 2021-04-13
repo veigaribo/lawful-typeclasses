@@ -65,4 +65,8 @@ export class Class {
 
     return this.laws.check(instance)
   }
+
+  equals(other: Class) {
+    return this.id === other.id
+  }
 }

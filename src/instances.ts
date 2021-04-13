@@ -2,7 +2,7 @@ import { Class } from './classes'
 import { metadataKey, Metadatable } from './private'
 
 export interface InstanceMetadata {
-  classIds: number[]
+  classes: Class[]
 }
 
 /**
@@ -25,7 +25,17 @@ export interface KnownInstanceConstructor
 export interface KnownInstance extends Metadatable<InstanceMetadata> {}
 
 export function isInstance(value: KnownInstance, theClass: Class) {
-  const metadata = value[metadataKey]?.classIds
+  const classes = value[metadataKey]?.classes
 
-  return !!metadata && metadata.includes(theClass.id)
+  return (
+    !!classes &&
+    classes.some((candidateClass) => {
+      // true if the candidate class is the class we're looking for or if one of
+      // it's parents is
+      return (
+        candidateClass.equals(theClass) ||
+        candidateClass.parents.some((parent) => parent.equals(theClass))
+      )
+    })
+  )
 }

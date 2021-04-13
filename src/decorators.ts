@@ -42,14 +42,9 @@ export function instance<T extends InstanceConstructor>(
     if (result.isSuccess()) {
       const existingMetadata = (Constructor as any)[metadataKey]
 
-      const newIds = [
-        theClass.id,
-        ...theClass.parents.map((parent) => parent.id),
-      ]
-
       const newMetadata = existingMetadata
-        ? { classIds: [...existingMetadata.classIds, ...newIds] }
-        : { classIds: [...newIds] }
+        ? { classes: [...existingMetadata.classes, theClass] }
+        : { classes: [theClass] }
 
       class NewClass extends Constructor implements KnownInstance {
         public [metadataKey]: InstanceMetadata

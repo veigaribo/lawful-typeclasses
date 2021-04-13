@@ -52,7 +52,7 @@ test('instance will mark if validation succeeds', () => {
     expect(n instanceof VNumber).toBe(true)
 
     expect((VNumber as KnownInstanceConstructor)[metadataKey]).toMatchObject({
-      classIds: [eq.id],
+      classes: [eq],
     })
   }).not.toThrow()
 })
