@@ -16,8 +16,8 @@ a type class (and are thus _instances_ of that class) as _constructors_ and
 to the instances of those JavaScript classes as _instance values_.
 
 What this library then allows you to do is to check if every constructor follows
-the rules defined in the class, allowing you to modularize your tests in a neat
-way.
+the rules defined in their classes, so that you to modularize your tests in a
+neat way.
 
 ### Classes
 
@@ -92,6 +92,7 @@ Instances are JavaScript classes that behave according to some (type) class.
 Using the Addable example above, one could almost define an instance as:
 
 ```javascript
+// you may use this decorator as many times as needed
 @instance(addable)
 class Number {
   constructor(n) {
@@ -118,17 +119,19 @@ class Number {
   // ...
 
   static generateData(n) {
-    // this is quite a trivial example, we just wrap the n
+    // this is quite a trivial example, we just wrap the n.
+    // in case you need more random values, just add them as parameters and they
+    // will be provided
     return new Number(n)
   }
 }
 ```
 
-With that done, you need only to call `validate` on the instance constructor and
-some tests will run. You should call this at some point in your tests.
+With that done, you need only to call `validate` on the constructor and the
+validators will run. **You should call this at some point in your tests.**
 
 ```javascript
-// will throw and Error if it fails
+// will throw an Error if it fails
 validate(Number)
 ```
 

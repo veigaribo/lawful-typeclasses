@@ -63,7 +63,9 @@ test('Readme examples work', () => {
       }
 
       static generateData(n) {
-        // this is quite a trivial example, we just wrap the n
+        // this is quite a trivial example, we just wrap the n.
+        // in case you need more random values, just add them as parameters and they
+        // will be provided
         return new Number(n)
       }
     }
