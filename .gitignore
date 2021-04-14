@@ -3,3 +3,6 @@ node_modules/
 tsconfig.tsbuildinfo
 
 lib/
+
+# I use it to test stuff
+.ignore/
