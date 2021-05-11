@@ -1,8 +1,14 @@
-import { InstanceConstructor } from './instances'
-import { MaybeError } from './utils'
-import { all, ValidationResult, Validator } from './validators'
+import { cache } from './cache'
+import { ConstructorValuesGenerator } from './generators'
+import { Constructor, MaybeError } from './utils'
+import {
+  all,
+  ValidationResult,
+  InstanceValidator,
+  ValidationOptions,
+} from './validators'
 
-type Laws = Validator<InstanceConstructor>
+type Laws = InstanceValidator<Constructor>
 
 export interface ClassOptions {
   /** The name will be used to improve error messages. */
@@ -51,19 +57,35 @@ export class Class {
   }
 
   /**
-   * Checks if something is an instance of this class, not taking parents into
-   * account.
+   * Checks if something is an instance of this class.
    *
-   * This is probably not what you're looking for: If you want to properly check
-   * if something is an instance of a class, check out the `validate` procedure.
-   *
-   * @param instance
+   * @param Constructor
    * @returns
-   *
-   * @see {@link validate}
    */
-  validate(instance: InstanceConstructor): ValidationResult {
-    return this.laws.check(instance)
+  validate<T extends Constructor>(
+    Constructor: T,
+    values: ConstructorValuesGenerator<T>,
+    options: ValidationOptions = {},
+  ): ValidationResult {
+    // check cache
+    if (cache.contains(Constructor, this)) {
+      return MaybeError.success()
+    }
+
+    // not cached
+    const result = MaybeError.foldConjoin([
+      // parents
+      ...this.parents.map((parent) =>
+        parent.validate(Constructor, values, options),
+      ),
+      // constructor itself
+      this.laws.check(Constructor, values, options),
+    ])
+
+    // cache
+    cache.set(Constructor, this)
+
+    return result
   }
 
   equals(other: Class) {

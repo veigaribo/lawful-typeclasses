@@ -2,15 +2,13 @@
   "compilerOptions": {
     "declaration": true,
     "declarationMap": true,
-    "esModuleInterop": true,
-    "experimentalDecorators": true,
     "module": "CommonJS",
     "moduleResolution": "node",
     "outDir": "lib",
     "rootDir": "src",
     "sourceMap": true,
     "strict": true,
-    "target": "ES6"
+    "target": "ES3"
   },
   "exclude": ["node_modules/**/*", "test/**/*", "lib/**/*", "**/__mocks__/**/*"]
 }

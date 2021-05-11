@@ -3,10 +3,10 @@ test('Readme examples work', () => {
     const {
       Class,
       all,
-      instance,
-      isInstance,
+      continuous,
+      discrete,
       obey,
-      validate,
+      instance,
     } = require('../lib/index')
 
     const eq = new Class({
@@ -23,7 +23,6 @@ test('Readme examples work', () => {
       // this is what I've decided to name my class
       // this option is not necessary, but it helps to improve error messages
       name: 'Addable',
-
       extends: [eq],
       // next, we define the properties we expect our instances to have.
       // we'll start out by using the `all` function to say that, in order to
@@ -37,13 +36,11 @@ test('Readme examples work', () => {
         obey(function commutativity(Instance, x, y) {
           const a = x.add(y)
           const b = y.add(x)
-
           return a.equals(b)
         }),
         obey(function associativity(Instance, x, y, z) {
           const a = x.add(y.add(z))
           const b = x.add(y).add(z)
-
           return a.equals(b)
         }),
       ),
@@ -61,25 +58,27 @@ test('Readme examples work', () => {
       add(other) {
         return new Number(this.n + other.n)
       }
-
-      static generateData(n) {
-        // this is quite a trivial example, we just wrap the n.
-        // in case you need more random values, just add them as parameters and they
-        // will be provided
-        return new Number(n)
-      }
     }
 
-    // will throw if anything goes bad.
-    // new instances shall be instantiated using the returned constructor
-    const VNumber = instance(addable)(Number)
+    // you may ask for as many parameters as you want, and to each one will be
+    // assigned a random number between 0 and 1 (inclusive)
+    // from these numbers you may generate an instance of your constructor
+    const gen0 = continuous((n) => new Number(n))
 
-    // will throw and Error if it fails
-    validate(VNumber)
+    // note that, to increase the likelihood of catching edge cases, sometimes the
+    // generated numbers will be all 0s or 1s
 
-    const n = new VNumber(50)
+    // testing values will be sampled from the given array
+    const gen1 = discrete([new Number(0), new Number(1), new Number(3)])
 
-    const isAddable = isInstance(n, addable) // true, because Numbers are addable
-    expect(isAddable).toBe(true)
+    // this method would be more useful if we had a finite number of possible
+    // values, which is not the case
+
+    // will throw an Error if it fails
+    instance(Number, addable, gen0)
+    instance(Number, addable, gen1)
+
+    instance(Number, addable, gen0, { sampleSize: 10 })
+    instance(Number, addable, gen1, { sampleSize: 10 })
   }).not.toThrow()
 })

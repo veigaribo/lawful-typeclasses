@@ -1,5 +1,4 @@
 export * from './classes'
-export * from './decorators'
+export * from './generators'
 export * from './instances'
 export * from './validators'
-export * from './config'
