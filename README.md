@@ -153,7 +153,6 @@ When `instance` is called, a sample of random instance values will be created
 using your provided generator, and each class property will be tested using
 those.
 If any of the laws fails to be asserted, an error is thrown, and you may be sure
-that the constructor in question is not an instance of the class you declared in
-the decorator.
+that the constructor in question is not an instance of the class you declared.
 
 In case it passes, you may have a high confidence that it is.
