@@ -87,9 +87,10 @@ const addable = new Class({
 
 ### Instances
 
-Instances are JavaScript classes that behave according to some (type) class.
+Instances are JavaScript constructors that behave according to some (type)
+class.
 
-Let's start with the following class:
+Let's start with the following:
 
 ```javascript
 class Number {
@@ -108,8 +109,8 @@ class Number {
 ```
 
 In order to declare it as an instance of something, you must provide a way of
-generating values from your constructor. These are the values that will be used
-for testing. (See [How it works](#lt-how-it-works))
+generating values from it. These are the values that will be used for testing.
+(See [How it works](#lt-how-it-works))
 
 There are two ways of doing that:
 
