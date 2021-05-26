@@ -1,5 +1,5 @@
 import { Generator } from './generators'
-import { arrayWithLength, Constructor, MaybeError } from './utils'
+import { Constructor, MaybeError } from './utils'
 
 export interface ValidationOptions {
   sampleSize?: number
