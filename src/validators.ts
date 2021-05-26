@@ -1,4 +1,4 @@
-import { ConstructorValuesGenerator } from './generators'
+import { Generator } from './generators'
 import { arrayWithLength, Constructor, MaybeError } from './utils'
 
 export interface ValidationOptions {
@@ -10,7 +10,7 @@ export type ValidationResult = MaybeError
 export interface InstanceValidator<T extends Constructor> {
   check(
     Instance: T,
-    values: ConstructorValuesGenerator<T>,
+    values: Generator<T>,
     options?: ValidationOptions,
   ): ValidationResult
 }
@@ -26,7 +26,7 @@ export class Obeys<T extends Constructor> implements InstanceValidator<T> {
 
   check(
     Instance: T,
-    values: ConstructorValuesGenerator<T>,
+    values: Generator<T>,
     options: ValidationOptions = {},
   ): ValidationResult {
     const { sampleSize = 15 } = options
@@ -77,7 +77,7 @@ export class All<T extends Constructor> implements InstanceValidator<T> {
 
   check(
     Instance: T,
-    values: ConstructorValuesGenerator<T>,
+    values: Generator<T>,
     options: ValidationOptions = {},
   ): ValidationResult {
     const result = MaybeError.foldConjoin(
@@ -95,7 +95,7 @@ export class Any<T extends Constructor> implements InstanceValidator<T> {
 
   check(
     Instance: T,
-    values: ConstructorValuesGenerator<T>,
+    values: Generator<T>,
     options: ValidationOptions = {},
   ): ValidationResult {
     const result = MaybeError.foldDisjoin(

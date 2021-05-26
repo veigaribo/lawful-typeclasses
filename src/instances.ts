@@ -1,5 +1,5 @@
 import { Class } from './classes'
-import { ConstructorValuesGenerator } from './generators'
+import { Generator } from './generators'
 import { Constructor, MaybeError } from './utils'
 import { ValidationOptions } from './validators'
 
@@ -28,7 +28,7 @@ import { ValidationOptions } from './validators'
 export function instance<T extends Constructor>(
   Constructor: T,
   clazz: Class,
-  values: ConstructorValuesGenerator<T>,
+  values: Generator<T>,
   options: ValidationOptions = {},
 ) {
   const result = clazz.validate(Constructor, values, options)

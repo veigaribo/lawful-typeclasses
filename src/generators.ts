@@ -1,6 +1,6 @@
 import { arrayWithLength, Constructor } from './utils'
 
-export interface ConstructorValuesGenerator<T extends Constructor> {
+export interface Generator<T extends Constructor> {
   get(i: number): InstanceType<T>
 }
 
@@ -15,8 +15,7 @@ export function defaultRandom(): number {
   return Math.random()
 }
 
-export class Continuous<T extends Constructor>
-  implements ConstructorValuesGenerator<T> {
+export class Continuous<T extends Constructor> implements Generator<T> {
   public readonly random: RandomFunction
 
   /**
@@ -50,8 +49,7 @@ export class Continuous<T extends Constructor>
   }
 }
 
-export class Discrete<T extends Constructor>
-  implements ConstructorValuesGenerator<T> {
+export class Discrete<T extends Constructor> implements Generator<T> {
   public readonly random: RandomFunction
 
   /**

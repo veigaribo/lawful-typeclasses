@@ -1,5 +1,5 @@
 import { cache } from './cache'
-import { ConstructorValuesGenerator } from './generators'
+import { Generator } from './generators'
 import { Constructor, MaybeError } from './utils'
 import {
   all,
@@ -64,7 +64,7 @@ export class Class {
    */
   validate<T extends Constructor>(
     Constructor: T,
-    values: ConstructorValuesGenerator<T>,
+    values: Generator<T>,
     options: ValidationOptions = {},
   ): ValidationResult {
     // check cache
