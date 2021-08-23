@@ -16,8 +16,8 @@ a type class (and are thus _instances_ of that class) as _constructors_ and
 to the instances of those JavaScript classes as _instance values_.
 
 What this library then allows you to do is to check if every constructor follows
-the rules defined in their classes, so that you to modularize your tests in a
-neat way.
+the rules defined in their classes, so that you are able to modularize your tests
+in a neat way.
 
 ### Classes
 
