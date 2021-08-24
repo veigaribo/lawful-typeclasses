@@ -3,6 +3,9 @@
   "version": "0.4.0",
   "description": "Interfaces on steroids. Inspired by principled type classes.",
   "main": "lib/index.js",
+  "files": [
+    "lib/*"
+  ],
   "scripts": {
     "build": "tsc",
     "lint": "prettier -w .",
