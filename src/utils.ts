@@ -53,12 +53,10 @@ export class MaybeError extends Maybe<string> {
     }
   }
 
-  // not very functional
   isSuccess() {
     return this.value === null
   }
 
-  // not very functional
   isError() {
     return !this.isSuccess()
   }

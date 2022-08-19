@@ -21,7 +21,7 @@ export class Continuous<T extends Constructor> implements Generator<T> {
   /**
    *
    * @param f A function from _n_ real numbers in the range [0, 1] to a value of
-   * T
+   * T.
    * @param random A function that generates pseudo-random numbers. For each
    * value that is instantiated, this function will be called with a different
    * parameter `x`, and every random parameter will be a different `y`.
@@ -54,7 +54,7 @@ export class Discrete<T extends Constructor> implements Generator<T> {
 
   /**
    *
-   * @param values A list of discrete values the constructor may assume
+   * @param values A list of discrete values the constructor may assume.
    */
   constructor(
     public readonly values: InstanceType<T>[],
@@ -91,7 +91,7 @@ export function continuous<T extends Constructor>(
 }
 
 /**
- * Generate testing values from a finite list
+ * Generate testing values from a finite list.
  *
  * @example
  * ```

@@ -35,7 +35,7 @@ let idCounter = 0
  * const monoid = new Class({
  *  name: 'Monoid',
  *  extends: [eq],
- *  laws: all(append, commutativity, associativity, identity)
+ *  laws: all(append, associativity, identity)
  * })
  * ```
  *
@@ -67,24 +67,18 @@ export class Class {
     values: Generator<T>,
     options: ValidationOptions = {},
   ): ValidationResult {
-    // check cache
     if (cache.contains(Constructor, this)) {
       return MaybeError.success()
     }
 
-    // not cached
     const result = MaybeError.foldConjoin([
-      // parents
       ...this.parents.map((parent) =>
         parent.validate(Constructor, values, options),
       ),
-      // constructor itself
       this.laws.check(Constructor, values, options),
     ])
 
-    // cache
     cache.set(Constructor, this)
-
     return result
   }
 
