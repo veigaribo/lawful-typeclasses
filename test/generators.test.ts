@@ -16,7 +16,7 @@ describe('continuous', () => {
     Math.random = originalRandom
   })
 
-  it("continuous generates random numbers for it's function", () => {
+  it('continuous generates random numbers for its function', () => {
     const c = continuous<typeof A>((x, y) => {
       return new A(x, y)
     })
@@ -38,7 +38,7 @@ describe('continuous', () => {
     expect(gen.y).toEqual(0)
   })
 
-  it('continuous generates always 1s for the first duration', () => {
+  it('continuous generates always 1s for the second position', () => {
     const c = continuous<typeof A>((x, y) => {
       return new A(x, y)
     })
@@ -67,8 +67,10 @@ describe('continuous', () => {
 describe('discrete', () => {
   const originalRandom = Math.random
   const mockedRandomFn = jest.fn()
+  const index = 10 // Could be anything > 2
 
-  //
+  // Results of the random function in order to trigger the first, second and
+  // third values of a discrete generator with 3 options, respectively
   const FIRST_VALUE = 0.3
   const SECOND_VALUE = 0.6
   const THIRD_VALUE = 0.9
@@ -86,12 +88,12 @@ describe('discrete', () => {
     const d = discrete<typeof A>(values)
 
     mockedRandomFn.mockReturnValueOnce(THIRD_VALUE)
-    const gen0 = d.get(10)
+    const gen0 = d.get(index)
 
     expect(gen0).toEqual(values[2])
 
     mockedRandomFn.mockReturnValueOnce(FIRST_VALUE)
-    const gen1 = d.get(10)
+    const gen1 = d.get(index)
 
     expect(gen1).toEqual(values[0])
   })
@@ -102,8 +104,8 @@ describe('discrete', () => {
     const values = [new A(10, 1), new A(100, 2), new A(1000, 3)]
     const d = discrete<typeof A>(values, random)
 
-    const gen0 = d.get(10)
-    const gen1 = d.get(10)
+    const gen0 = d.get(index)
+    const gen1 = d.get(index)
 
     expect(gen0).toEqual(values[1])
     expect(gen1).toEqual(values[1])

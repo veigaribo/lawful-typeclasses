@@ -1,4 +1,4 @@
-test('Readme examples work', () => {
+test('readme examples work', () => {
   expect(() => {
     const {
       Class,

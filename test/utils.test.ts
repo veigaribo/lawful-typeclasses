@@ -1,6 +1,6 @@
 import { MaybeError } from '../src/utils'
 
-test('Conjoin works as expected', () => {
+test('conjoin works as expected', () => {
   const error = MaybeError.fail('1')
   const notError = MaybeError.success()
 
@@ -13,7 +13,7 @@ test('Conjoin works as expected', () => {
   expect(notError.conjoin(notError).value).toBeNull()
 })
 
-test('Disjoin works as expected', () => {
+test('disjoin works as expected', () => {
   const error = MaybeError.fail('2')
   const notError = MaybeError.success()
 

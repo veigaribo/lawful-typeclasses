@@ -1,6 +1,6 @@
 import { Class } from '../src/classes'
 
-test("Each class will have it's own id", () => {
+test('each class will have its own id', () => {
   const a = new Class({})
   const b = new Class({})
   const c = new Class({})

@@ -17,7 +17,7 @@ interface Show {
 
 const eq = new Class({
   laws: all(
-    obey((Instance, instance: Eq) => {
+    obey((_Instance, instance: Eq) => {
       return instance.equals(instance)
     }),
   ),
@@ -25,7 +25,7 @@ const eq = new Class({
 
 const neq = new Class({
   laws: all(
-    obey((Instance, instance: Neq) => {
+    obey((_Instance, instance: Neq) => {
       return !instance.nequals(instance)
     }),
   ),
@@ -33,7 +33,7 @@ const neq = new Class({
 
 const show = new Class({
   laws: all(
-    obey((Instance, instance: Show) => {
+    obey((_Instance, instance: Show) => {
       return instance.show() === undefined
     }),
   ),
@@ -116,7 +116,7 @@ test('validate will not throw if no parent class fails', () => {
   }).not.toThrow()
 })
 
-test('validate will not check any one class more than once', () => {
+test('validate will not check any single class more than once', () => {
   const showSpy = jest.spyOn(show.laws, 'check')
   const eqSpy = jest.spyOn(eq.laws, 'check')
 
