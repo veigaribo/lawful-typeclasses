@@ -52,7 +52,7 @@ export class Obeys<T extends Constructor> implements InstanceValidator<T> {
 
           params.push(param)
         } catch (error) {
-          return MaybeError.fail(error.message).conjoin(fail(params))
+          return MaybeError.fail((error as Error).message).conjoin(fail(params))
         }
       }
 
@@ -64,7 +64,7 @@ export class Obeys<T extends Constructor> implements InstanceValidator<T> {
           return fail(params)
         }
       } catch (error) {
-        return MaybeError.fail(error.message).conjoin(fail(params))
+        return MaybeError.fail((error as Error).message).conjoin(fail(params))
       }
     }
 
@@ -115,7 +115,7 @@ export class Any<T extends Constructor> implements InstanceValidator<T> {
  *
  * @example
  * ```javascript
- * obey(function commutativity(a, b) {
+ * obey(function commutativity(Instance, a, b) {
  *  // this property shall hold for any values a and b
  *  return a.add(b) === b.add(a)
  * })

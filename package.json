@@ -1,7 +1,7 @@
 {
   "name": "lawful-typeclasses",
   "version": "0.5.0",
-  "description": "Interfaces on steroids. Inspired by principled type classes.",
+  "description": "Property-based testing library. Inspired by principled type classes.",
   "main": "lib/index.js",
   "files": [
     "lib/*"
@@ -27,7 +27,7 @@
     "principled",
     "instance"
   ],
-  "author": "Gabriel Veiga <gabriellopvei@gmail.com>",
+  "author": "Gabriel Veiga <veigo@veigo.dev>",
   "license": "MIT",
   "devDependencies": {
     "@types/jest": "^26.0.14",

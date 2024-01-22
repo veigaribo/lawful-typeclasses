@@ -6,8 +6,10 @@ import { ValidationOptions } from './validators'
 /**
  * Validates if a constructor is an instance of a given class.
  *
- * @param Constructor
- * @param clazz
+ * @param Constructor JavaScript class to be tested
+ * @param clazz Class that the Constructor should conform to
+ * @param values Generator to generate testing values
+ * @param options
  *
  * @throws If the validation fails.
  *
@@ -17,13 +19,17 @@ import { ValidationOptions } from './validators'
  *   // ...
  * });
  *
- * class Showable implements Show {
+ * interface Showable {}
+ *
+ * class Show implements Showable {
  *   // ...
  * }
  *
  * // will throw if it fails
- * instance(Showable, show);
+ * instance(Show, show, discrete([new Show()]));
  * ```
+ *
+ * @see {@link discrete}
  */
 export function instance<T extends Constructor>(
   Constructor: T,
