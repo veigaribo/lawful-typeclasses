@@ -1,9 +1,11 @@
 {
   "name": "lawful-typeclasses",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "Property-based testing library. Inspired by principled type classes.",
   "main": "lib/index.js",
-  "files": ["lib/*"],
+  "files": [
+    "lib/*"
+  ],
   "scripts": {
     "build": "tsc",
     "lint": "prettier -w .",
@@ -45,6 +47,8 @@
   },
   "lint-staged": {
     "*.{js,ts,css,md}": "prettier --write",
-    "*.{js,ts}": ["jest --bail --findRelatedTests"]
+    "*.{js,ts}": [
+      "jest --bail --findRelatedTests"
+    ]
   }
 }
