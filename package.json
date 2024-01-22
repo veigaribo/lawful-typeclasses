@@ -3,14 +3,13 @@
   "version": "0.5.0",
   "description": "Property-based testing library. Inspired by principled type classes.",
   "main": "lib/index.js",
-  "files": [
-    "lib/*"
-  ],
+  "files": ["lib/*"],
   "scripts": {
     "build": "tsc",
     "lint": "prettier -w .",
     "prepare": "npm run build",
-    "test": "jest"
+    "test": "jest",
+    "release": "np"
   },
   "repository": {
     "type": "git",
@@ -34,11 +33,11 @@
     "husky": "^4.3.0",
     "jest": "^26.4.2",
     "lint-staged": "^10.4.0",
+    "np": "^9.2.0",
     "prettier": "^2.1.2",
     "ts-jest": "^26.4.1",
     "typescript": "^4.0.3"
   },
-  "dependencies": {},
   "husky": {
     "hooks": {
       "pre-commit": "lint-staged && npm run build && jest test/readme.test.js"
@@ -46,8 +45,6 @@
   },
   "lint-staged": {
     "*.{js,ts,css,md}": "prettier --write",
-    "*.{js,ts}": [
-      "jest --bail --findRelatedTests"
-    ]
+    "*.{js,ts}": ["jest --bail --findRelatedTests"]
   }
 }
