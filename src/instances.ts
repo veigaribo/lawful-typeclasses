@@ -1,6 +1,6 @@
-import { Class } from './classes'
+import { Class, ClassInput } from './classes'
 import { Generator } from './generators'
-import { Constructor, MaybeError } from './utils'
+import { MaybeError } from './utils'
 import { ValidationOptions } from './validators'
 
 /**
@@ -31,17 +31,16 @@ import { ValidationOptions } from './validators'
  *
  * @see {@link discrete}
  */
-export function instance<T extends Constructor>(
-  Constructor: T,
-  clazz: Class,
-  values: Generator<T>,
+export function instance<T extends any[]>(
+  clazz: Class<T>,
+  values: Generator<ClassInput<T>>,
   options: ValidationOptions = {},
 ) {
-  const result = clazz.validate(Constructor, values, options)
+  const result = clazz.validate(values, options)
 
   if (result.isError()) {
     throw new Error(
-      result.conjoin(MaybeError.fail(`${Constructor.name} is invalid.`)).value!,
+      result.conjoin(MaybeError.fail(`'${values.name}' is invalid.`)).value!,
     )
   }
 }

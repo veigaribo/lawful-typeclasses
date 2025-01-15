@@ -17,7 +17,7 @@ describe('continuous', () => {
   })
 
   it('continuous generates random numbers for its function', () => {
-    const c = continuous<typeof A>((x, y) => {
+    const c = continuous<A>('A', (x, y) => {
       return new A(x, y)
     })
 
@@ -28,7 +28,7 @@ describe('continuous', () => {
   })
 
   it('continuous generates always 0s for the first position', () => {
-    const c = continuous<typeof A>((x, y) => {
+    const c = continuous<A>('A', (x, y) => {
       return new A(x, y)
     })
 
@@ -39,7 +39,7 @@ describe('continuous', () => {
   })
 
   it('continuous generates always 1s for the second position', () => {
-    const c = continuous<typeof A>((x, y) => {
+    const c = continuous<A>('A', (x, y) => {
       return new A(x, y)
     })
 
@@ -53,9 +53,13 @@ describe('continuous', () => {
     const mockedRandomValue2 = (Symbol(2013) as any) as number
     const random = () => mockedRandomValue2
 
-    const c = continuous<typeof A>((x, y) => {
-      return new A(x, y)
-    }, random)
+    const c = continuous<A>(
+      'A',
+      (x, y) => {
+        return new A(x, y)
+      },
+      random,
+    )
 
     const gen = c.get(10)
 
@@ -85,7 +89,7 @@ describe('discrete', () => {
 
   it('discrete generates random values', () => {
     const values = [new A(10, 1), new A(100, 2), new A(1000, 3)]
-    const d = discrete<typeof A>(values)
+    const d = discrete<A>('A', values)
 
     mockedRandomFn.mockReturnValueOnce(THIRD_VALUE)
     const gen0 = d.get(index)
@@ -102,7 +106,7 @@ describe('discrete', () => {
     const random = () => SECOND_VALUE
 
     const values = [new A(10, 1), new A(100, 2), new A(1000, 3)]
-    const d = discrete<typeof A>(values, random)
+    const d = discrete<A>('A', values, random)
 
     const gen0 = d.get(index)
     const gen1 = d.get(index)

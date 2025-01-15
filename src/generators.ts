@@ -1,12 +1,14 @@
-import { arrayWithLength, Constructor } from './utils'
+import { arrayWithLength } from './utils'
 
 /**
  * An implementation of this interface should return a random value each time
  * the `get` method is called. The `i` parameter will be 0 for the first tests,
  * 1 for second and so on.
  */
-export interface Generator<T extends Constructor> {
-  get(i: number): InstanceType<T>
+export abstract class Generator<T> {
+  constructor(public readonly name: string) {}
+
+  abstract get(i: number): T
 }
 
 export type RandomFunction = () => number
@@ -20,7 +22,7 @@ export function defaultRandom(): number {
   return Math.random()
 }
 
-export class Continuous<T extends Constructor> implements Generator<T> {
+export class Continuous<T> extends Generator<T> {
   public readonly random: RandomFunction
 
   /**
@@ -33,13 +35,15 @@ export class Continuous<T extends Constructor> implements Generator<T> {
    * for the second one, and the rest will be random.
    */
   constructor(
-    public readonly f: (...n: number[]) => InstanceType<T>,
+    name: string,
+    public readonly f: (...n: number[]) => T,
     random?: RandomFunction,
   ) {
+    super(name)
     this.random = random || defaultRandom
   }
 
-  public get(i: number): InstanceType<T> {
+  public get(i: number): T {
     const amountOfParams = this.f.length
     const params = arrayWithLength(amountOfParams).map(() => {
       if (i === 0) return 0
@@ -52,7 +56,7 @@ export class Continuous<T extends Constructor> implements Generator<T> {
   }
 }
 
-export class Discrete<T extends Constructor> implements Generator<T> {
+export class Discrete<T> extends Generator<T> {
   public readonly random: RandomFunction
 
   /**
@@ -61,15 +65,16 @@ export class Discrete<T extends Constructor> implements Generator<T> {
    * @param random A function that generates pseudo-random numbers in the range [0, 1[.
    */
   constructor(
-    public readonly values: InstanceType<T>[],
+    name: string,
+    public readonly values: T[],
     random?: RandomFunction,
   ) {
+    super(name)
     this.random = random || defaultRandom
   }
 
-  public get(_i: number): InstanceType<T> {
+  public get(_i: number): T {
     const randomIndex = Math.floor(this.random() * this.values.length)
-
     return this.values[randomIndex]
   }
 }
@@ -87,11 +92,12 @@ export class Discrete<T extends Constructor> implements Generator<T> {
  * @param random
  * @returns
  */
-export function continuous<T extends Constructor>(
-  f: (...n: number[]) => InstanceType<T>,
+export function continuous<T>(
+  name: string,
+  f: (...n: number[]) => T,
   random?: RandomFunction,
 ) {
-  return new Continuous(f, random)
+  return new Continuous(name, f, random)
 }
 
 /**
@@ -106,9 +112,10 @@ export function continuous<T extends Constructor>(
  * @param values
  * @returns
  */
-export function discrete<T extends Constructor>(
-  values: InstanceType<T>[],
+export function discrete<T>(
+  name: string,
+  values: T[],
   random?: RandomFunction,
 ) {
-  return new Discrete(values, random)
+  return new Discrete(name, values, random)
 }

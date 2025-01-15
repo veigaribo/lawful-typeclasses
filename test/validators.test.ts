@@ -15,46 +15,46 @@ class SumInstance extends EqInstance {
   }
 }
 
-const generateSum = continuous((x) => new SumInstance(x))
+const generateSum = continuous('SumInstance', (x) => new SumInstance(x))
 
 test('obey returns true if the predicate holds', () => {
-  const validator = obey((_Instance, a: SumInstance, b: SumInstance) => {
+  const validator = obey((a: SumInstance, b: SumInstance) => {
     return a.sum(b).equals(b.sum(a))
   })
 
-  expect(validator.check(SumInstance, generateSum).isSuccess()).toBe(true)
+  expect(validator.check(generateSum).isSuccess()).toBe(true)
 })
 
 test('obey returns false if the predicate does not hold', () => {
   const zero = new SumInstance(0)
 
-  const validator = obey((_Instance, a: SumInstance, b: SumInstance) => {
+  const validator = obey((a: SumInstance, b: SumInstance) => {
     return !a.equals(b) && a.sum(zero).equals(b.sum(zero))
   })
 
-  expect(validator.check(SumInstance, generateSum).isError()).toBe(true)
+  expect(validator.check(generateSum).isError()).toBe(true)
 })
 
 test('will run as many tests as it is set in the options', () => {
   const qty = 10
 
-  const predicate = jest.fn((_Instance, a: SumInstance, b: SumInstance) => {
+  const predicate = jest.fn((a: SumInstance, b: SumInstance) => {
     return a.sum(b).equals(b.sum(a))
   })
 
   const validator = obey(predicate)
 
-  expect(
-    validator.check(SumInstance, generateSum, { sampleSize: qty }).isSuccess(),
-  ).toBe(true)
+  expect(validator.check(generateSum, { sampleSize: qty }).isSuccess()).toBe(
+    true,
+  )
   expect(predicate).toBeCalledTimes(qty)
 
   predicate.mockClear()
   const qty2 = 6
 
-  expect(
-    validator.check(SumInstance, generateSum, { sampleSize: qty2 }).isSuccess(),
-  ).toBe(true)
+  expect(validator.check(generateSum, { sampleSize: qty2 }).isSuccess()).toBe(
+    true,
+  )
   expect(predicate).toBeCalledTimes(qty2)
 })
 
@@ -69,16 +69,20 @@ test('will provide the Instance constructor as the first parameter', () => {
     }
   }
 
-  const validator = obey((Instance: typeof StaticSumInstance, a, b) => {
-    return Instance.sum(a, b).equals(Instance.sum(a, b))
+  const validator = obey<StaticSumInstance>((a, b) => {
+    return StaticSumInstance.sum(a, b).equals(StaticSumInstance.sum(a, b))
   })
-  const generate = continuous((x) => new StaticSumInstance(x))
 
-  expect(validator.check(StaticSumInstance, generate).isSuccess()).toBe(true)
+  const generate = continuous(
+    'StaticSumInstance',
+    (x) => new StaticSumInstance(x),
+  )
+
+  expect(validator.check(generate).isSuccess()).toBe(true)
 })
 
 const implement = (key: string) => {
-  return obey((_Instance, a) => key in a)
+  return obey<object>((a) => key in a)
 }
 
 test('all returns true if all validators return true', () => {
@@ -88,7 +92,7 @@ test('all returns true if all validators return true', () => {
     implement('toString'),
   )
 
-  expect(validator.check(SumInstance, generateSum).isSuccess()).toBe(true)
+  expect(validator.check(generateSum).isSuccess()).toBe(true)
 })
 
 test('all returns false if some of the validators does not return true', () => {
@@ -98,19 +102,19 @@ test('all returns false if some of the validators does not return true', () => {
     implement('multiply'),
   )
 
-  expect(validator.check(SumInstance, generateSum).isError()).toBe(true)
+  expect(validator.check(generateSum).isError()).toBe(true)
 })
 
 test('all returns false if none of the validators return true', () => {
   const validator = all(implement('a'), implement('b'), implement('c'))
 
-  expect(validator.check(SumInstance, generateSum).isError()).toBe(true)
+  expect(validator.check(generateSum).isError()).toBe(true)
 })
 
 test('all returns true if no validators are expected', () => {
   const validator = all()
 
-  expect(validator.check(SumInstance, generateSum).isSuccess()).toBe(true)
+  expect(validator.check(generateSum).isSuccess()).toBe(true)
 })
 
 test('any returns true if all validators return true', () => {
@@ -120,7 +124,7 @@ test('any returns true if all validators return true', () => {
     implement('toString'),
   )
 
-  expect(validator.check(SumInstance, generateSum).isSuccess()).toBe(true)
+  expect(validator.check(generateSum).isSuccess()).toBe(true)
 })
 
 test('any returns true if only some of the validators return true', () => {
@@ -130,19 +134,19 @@ test('any returns true if only some of the validators return true', () => {
     implement('multiply'),
   )
 
-  expect(validator.check(SumInstance, generateSum).isSuccess()).toBe(true)
+  expect(validator.check(generateSum).isSuccess()).toBe(true)
 })
 
 test('any returns false if none of the validators return true', () => {
   const validator = any(implement('a'), implement('b'), implement('c'))
 
-  expect(validator.check(SumInstance, generateSum).isError()).toBe(true)
+  expect(validator.check(generateSum).isError()).toBe(true)
 })
 
 test('any returns false if no validators are expected', () => {
   const validator = any()
 
-  expect(validator.check(SumInstance, generateSum).isError()).toBe(true)
+  expect(validator.check(generateSum).isError()).toBe(true)
 })
 
 test('using higher-order validators as argument to another works as expected', () => {
@@ -152,7 +156,7 @@ test('using higher-order validators as argument to another works as expected', (
     any(implement('equals'), implement('nequals')),
   )
 
-  expect(validator1.check(SumInstance, generateSum).isSuccess()).toBe(true)
+  expect(validator1.check(generateSum).isSuccess()).toBe(true)
 
   const validator2 = any(
     all(implement('sum'), implement('multiply'), implement('divide')),
@@ -160,7 +164,7 @@ test('using higher-order validators as argument to another works as expected', (
     all(implement('sum'), implement('equals')),
   )
 
-  expect(validator2.check(SumInstance, generateSum).isSuccess()).toBe(true)
+  expect(validator2.check(generateSum).isSuccess()).toBe(true)
 
   const validator3 = all(
     implement('sum'),
@@ -168,7 +172,7 @@ test('using higher-order validators as argument to another works as expected', (
     any(implement('multiply'), implement('divide'), implement('raise')),
   )
 
-  expect(validator3.check(SumInstance, generateSum).isError()).toBe(true)
+  expect(validator3.check(generateSum).isError()).toBe(true)
 
   const validator4 = all(
     any(all(any(implement('sum'), implement('multiply')))),
@@ -176,5 +180,5 @@ test('using higher-order validators as argument to another works as expected', (
     implement('map'),
   )
 
-  expect(validator4.check(SumInstance, generateSum).isError()).toBe(true)
+  expect(validator4.check(generateSum).isError()).toBe(true)
 })

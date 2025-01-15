@@ -1,46 +1,30 @@
-import { Class } from '../src/classes'
+import { Class, consolidate } from '../src/classes'
 import { continuous, discrete } from '../src/generators'
 import { instance } from '../src/instances'
-import { all, obey } from '../src/validators'
+import { obey } from '../src/validators'
 
 interface Eq {
   equals(other: this): boolean
-}
-
-interface Neq {
-  nequals(other: this): boolean
 }
 
 interface Show {
   show(): void
 }
 
-const eq = new Class({
-  laws: all(
-    obey((_Instance, instance: Eq) => {
-      return instance.equals(instance)
-    }),
-  ),
+const eqLaw = obey((instance: Eq) => {
+  return instance.equals(instance)
 })
 
-const neq = new Class({
-  laws: all(
-    obey((_Instance, instance: Neq) => {
-      return !instance.nequals(instance)
-    }),
-  ),
+const eq = new Class<[Eq]>().withLaws(eqLaw)
+
+const showLaw = obey((instance: Show) => {
+  return instance.show() === undefined
 })
 
-const show = new Class({
-  laws: all(
-    obey((_Instance, instance: Show) => {
-      return instance.show() === undefined
-    }),
-  ),
-})
+const show = new Class<[Show]>().withLaws(showLaw)
 
-const showEq = new Class({
-  extends: [eq, show],
+const showEq = new Class<[Eq, Show]>({
+  extends: consolidate(eq, show),
 })
 
 test('validate will throw if validation fails', () => {
@@ -54,10 +38,10 @@ test('validate will throw if validation fails', () => {
     show() {}
   }
 
-  const generateVNumber = continuous((x) => new VNumber(x))
+  const generateVNumber = continuous('VNumber', (x) => new VNumber(x))
 
   expect(() => {
-    instance(VNumber, eq, generateVNumber)
+    instance(eq, generateVNumber)
   }).toThrow()
 })
 
@@ -72,11 +56,11 @@ test('validate will not throw if validation succeeds', () => {
     show() {}
   }
 
-  const generateVNumber = continuous((x) => new VNumber(x))
+  const generateVNumber = continuous('VNumber', (x) => new VNumber(x))
 
   expect(() => {
-    instance(VNumber, eq, generateVNumber)
-    instance(VNumber, show, generateVNumber)
+    instance(eq, generateVNumber)
+    instance(show, generateVNumber)
   }).not.toThrow()
 })
 
@@ -91,10 +75,10 @@ test('validate will throw if a parent class fails', () => {
     show() {}
   }
 
-  const generateVNumber = continuous((x) => new VNumber(x))
+  const generateVNumber = continuous('VNumber', (x) => new VNumber(x))
 
   expect(() => {
-    instance(VNumber, showEq, generateVNumber)
+    instance(showEq, generateVNumber)
   }).toThrow()
 })
 
@@ -109,16 +93,16 @@ test('validate will not throw if no parent class fails', () => {
     show() {}
   }
 
-  const generateVNumber = continuous((x) => new VNumber(x))
+  const generateVNumber = continuous('VNumber', (x) => new VNumber(x))
 
   expect(() => {
-    instance(VNumber, showEq, generateVNumber)
+    instance(showEq, generateVNumber)
   }).not.toThrow()
 })
 
 test('validate will not check any single class more than once', () => {
-  const showSpy = jest.spyOn(show.laws, 'check')
-  const eqSpy = jest.spyOn(eq.laws, 'check')
+  const showSpy = jest.spyOn(showLaw, 'check')
+  const eqSpy = jest.spyOn(eqLaw, 'check')
 
   class VNumber implements Eq {
     constructor(public readonly n: number) {}
@@ -134,15 +118,15 @@ test('validate will not check any single class more than once', () => {
     }
   }
 
-  const generateVNumber = discrete([
+  const generateVNumber = discrete('VNumber', [
     new VNumber(Math.PI),
     new VNumber(Math.E),
     new VNumber(Math.SQRT2),
   ])
 
-  instance(VNumber, showEq, generateVNumber)
-  instance(VNumber, show, generateVNumber)
-  instance(VNumber, eq, generateVNumber)
+  instance(showEq, generateVNumber)
+  instance(show, generateVNumber)
+  instance(eq, generateVNumber)
 
   expect(showSpy).toBeCalledTimes(1)
   expect(eqSpy).toBeCalledTimes(1)

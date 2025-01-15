@@ -1,6 +1,6 @@
 import { cache } from './cache'
 import { Generator } from './generators'
-import { Constructor, MaybeError } from './utils'
+import { MaybeError } from './utils'
 import {
   all,
   ValidationResult,
@@ -8,15 +8,47 @@ import {
   ValidationOptions,
 } from './validators'
 
-type Laws = InstanceValidator<Constructor>
+// https://stackoverflow.com/a/50375286
+// Ultra clever
+type UnionToIntersection<U> = (U extends any ? (x: U) => void : never) extends (
+  x: infer I,
+) => void
+  ? I
+  : never
 
-export interface ClassOptions {
+export type ClassInput<T extends any[]> = T extends (infer U)[]
+  ? UnionToIntersection<U>
+  : never
+
+// Converts from e.g. `[A, B, C]` to `(A | B | C)[]`. `ConsolidatedClasses` doesn't handle tuples
+// well without this.
+type ArrayFromTuple<T extends any[]> = T extends (infer U)[] ? U[] : never
+
+export type ConsolidatedClasses<T extends Class<any[]>[]> = ArrayFromTuple<
+  T
+> extends Class<(infer U)[]>[]
+  ? Class<U[]>[]
+  : never
+
+/** Transforms a list of distinct classes, such as `[Class<[A]>, Class<[B, C]>]` into an uniform
+ * list of the form `[Class<(A | B | C)[]>, Class<(A | B | C)[]>, Class<(A | B | C)[]>]`. Use it
+ * to generate an adequate value for `instance`.
+ *
+ * @see {@link instance}
+ * */
+export function consolidate<T extends Class<any[]>[]>(
+  ...classes: T
+): ConsolidatedClasses<T> {
+  // WARNING: I claim this conversion works, but TypeScript will not help us with this.
+  return (classes as unknown) as ConsolidatedClasses<T>
+}
+
+/** T should be an union of the types of every parent. */
+export interface ClassOptions<T extends Class<any>[]> {
   /** The name will be used to improve error messages. */
   name?: string
   /** A list of classes that are prerequisites to this one. */
-  extends?: Class[]
-  /** A validator that will check if a constructor is an instance of this class. */
-  laws?: Laws
+  extends?: Class<T>[]
 }
 
 let idCounter = 0
@@ -41,19 +73,30 @@ let idCounter = 0
  *
  * @see {@link all}
  */
-export class Class {
-  public readonly parents: Class[]
-  public readonly laws: Laws
+export class Class<T extends any[]> {
+  public readonly parents: Class<T>[]
   public readonly name: string
   public readonly id: number
 
-  constructor(options: ClassOptions) {
-    const { extends: parents = [], laws = all(), name } = options
+  private _laws: InstanceValidator<ClassInput<T>>[] = []
+
+  constructor(options: ClassOptions<T> = {}) {
+    const { extends: parents = [], name } = options
 
     this.parents = parents
-    this.laws = laws
     this.name = name || 'Unnamed'
     this.id = idCounter++
+  }
+
+  /** A validator that will check if a constructor is an instance of this class. */
+  withLaws(validator: InstanceValidator<ClassInput<T>>): this {
+    this._laws.push(validator)
+    return this
+  }
+
+  /** A dedicated method should be used for proper type inference from TypeScript */
+  getLaws(): InstanceValidator<ClassInput<T>> {
+    return all(...this._laws)
   }
 
   /**
@@ -62,27 +105,24 @@ export class Class {
    * @param Constructor
    * @returns
    */
-  validate<T extends Constructor>(
-    Constructor: T,
-    values: Generator<T>,
+  validate(
+    values: Generator<ClassInput<T>>,
     options: ValidationOptions = {},
   ): ValidationResult {
-    if (cache.contains(Constructor, this)) {
+    if (cache.contains(values, this)) {
       return MaybeError.success()
     }
 
     const result = MaybeError.foldConjoin([
-      ...this.parents.map((parent) =>
-        parent.validate(Constructor, values, options),
-      ),
-      this.laws.check(Constructor, values, options),
+      ...this.parents.map((parent) => parent.validate(values, options)),
+      this.getLaws().check(values, options),
     ])
 
-    cache.set(Constructor, this)
+    cache.set(values, this)
     return result
   }
 
-  equals(other: Class) {
+  equals(other: Class<T>) {
     return this.id === other.id
   }
 }

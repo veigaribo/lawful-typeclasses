@@ -1,5 +1,5 @@
 import { Generator } from './generators'
-import { Constructor, MaybeError } from './utils'
+import { MaybeError } from './utils'
 
 export interface ValidationOptions {
   sampleSize?: number
@@ -7,32 +7,24 @@ export interface ValidationOptions {
 
 export type ValidationResult = MaybeError
 
-export interface InstanceValidator<T extends Constructor> {
-  check(
-    Instance: T,
-    values: Generator<T>,
-    options?: ValidationOptions,
-  ): ValidationResult
+export interface InstanceValidator<T> {
+  check(values: Generator<T>, options?: ValidationOptions): ValidationResult
 }
 
-export type Predicate<T extends Constructor> = (
-  Instance: T,
-  ...data: InstanceType<T>[]
-) => boolean
+export type Predicate<T> = (...data: T[]) => boolean
 
 // An Obey of T validates using instances of T
-export class Obeys<T extends Constructor> implements InstanceValidator<T> {
+export class Obeys<T> implements InstanceValidator<T> {
   constructor(public readonly param: Predicate<T>) {}
 
   check(
-    Instance: T,
     values: Generator<T>,
     options: ValidationOptions = {},
   ): ValidationResult {
     const { sampleSize = 15 } = options
 
     const predicate = this.param
-    const paramsForPredicate = predicate.length - 1
+    const paramsForPredicate = predicate.length
 
     const fail = (params: any[]): ValidationResult => {
       return MaybeError.fail(
@@ -58,7 +50,7 @@ export class Obeys<T extends Constructor> implements InstanceValidator<T> {
 
       try {
         // may throw
-        const result = predicate(Instance, ...params)
+        const result = predicate(...params)
 
         if (!result) {
           return fail(params)
@@ -72,16 +64,15 @@ export class Obeys<T extends Constructor> implements InstanceValidator<T> {
   }
 }
 
-export class All<T extends Constructor> implements InstanceValidator<T> {
+export class All<T> implements InstanceValidator<T> {
   constructor(public readonly param: InstanceValidator<T>[]) {}
 
   check(
-    Instance: T,
     values: Generator<T>,
     options: ValidationOptions = {},
   ): ValidationResult {
     const result = MaybeError.foldConjoin(
-      this.param.map((val) => val.check(Instance, values, options)),
+      this.param.map((val) => val.check(values, options)),
     )
 
     return result.isError()
@@ -90,16 +81,15 @@ export class All<T extends Constructor> implements InstanceValidator<T> {
   }
 }
 
-export class Any<T extends Constructor> implements InstanceValidator<T> {
+export class Any<T> implements InstanceValidator<T> {
   constructor(public readonly param: InstanceValidator<T>[]) {}
 
   check(
-    Instance: T,
     values: Generator<T>,
     options: ValidationOptions = {},
   ): ValidationResult {
     const result = MaybeError.foldDisjoin(
-      this.param.map((val) => val.check(Instance, values, options)),
+      this.param.map((val) => val.check(values, options)),
     )
 
     return result.isError()
@@ -121,7 +111,7 @@ export class Any<T extends Constructor> implements InstanceValidator<T> {
  * })
  * ```
  */
-export function obey<T extends Constructor>(predicate: Predicate<T>) {
+export function obey<T>(predicate: Predicate<T>) {
   return new Obeys<T>(predicate)
 }
 
@@ -137,9 +127,7 @@ export function obey<T extends Constructor>(predicate: Predicate<T>) {
  * all(associativity, commutativity, identity)
  * ```
  */
-export function all<T extends Constructor>(
-  ...laws: InstanceValidator<T>[]
-): InstanceValidator<T> {
+export function all<T>(...laws: InstanceValidator<T>[]): InstanceValidator<T> {
   return new All(laws)
 }
 
@@ -155,8 +143,6 @@ export function all<T extends Constructor>(
  * any(symmetry, antisymmetry)
  * ```
  */
-export function any<T extends Constructor>(
-  ...laws: InstanceValidator<T>[]
-): InstanceValidator<T> {
+export function any<T>(...laws: InstanceValidator<T>[]): InstanceValidator<T> {
   return new Any(laws)
 }

@@ -1,7 +1,3 @@
-export interface Constructor {
-  new (...args: any[]): any
-}
-
 export function arrayWithLength(n: number): Array<number> {
   return new Array(n).fill(0)
 }
