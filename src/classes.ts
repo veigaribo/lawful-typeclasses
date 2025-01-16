@@ -35,21 +35,6 @@ type TypesOfClasses<T extends Class<any>[]> = ArrayFromTuple<T> extends Class<
   ? UnionToIntersection<U>
   : never
 
-interface A {
-  a(): void
-}
-interface B {
-  b(): void
-}
-interface C {
-  c(): void
-}
-interface D {
-  d(): void
-}
-
-type X = TypesOfClasses<[Class<A>, Class<B & C>]>
-
 /**
  * Given the type of an array (or tuple) of classes over different types, create the type of a new
  * array whose elements are classes whose types are intersections of every type in the classes of
