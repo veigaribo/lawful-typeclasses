@@ -1,6 +1,6 @@
 {
   "name": "lawful-typeclasses",
-  "version": "0.5.1",
+  "version": "0.6.0-0",
   "description": "Property-based testing library. Inspired by principled type classes.",
   "main": "lib/index.js",
   "files": [
