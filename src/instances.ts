@@ -6,7 +6,6 @@ import { ValidationOptions } from './validators'
 /**
  * Validates if a constructor is an instance of a given class.
  *
- * @param Constructor JavaScript class to be tested
  * @param clazz Class that the Constructor should conform to
  * @param values Generator to generate testing values
  * @param options
@@ -15,9 +14,9 @@ import { ValidationOptions } from './validators'
  *
  * @example
  * ```javascript
- * const show = new Class({
+ * const show = new Class(
  *   // ...
- * });
+ * );
  *
  * interface Showable {}
  *
@@ -26,7 +25,7 @@ import { ValidationOptions } from './validators'
  * }
  *
  * // will throw if it fails
- * instance(Show, show, discrete([new Show()]));
+ * instance(show, discrete([new Show()]));
  * ```
  *
  * @see {@link discrete}
@@ -40,7 +39,11 @@ export function instance<T>(
 
   if (result.isError()) {
     throw new Error(
-      result.conjoin(MaybeError.fail(`'${values.name}' is invalid.`)).value!,
+      result.and(
+        MaybeError.fail(
+          `Values '${values.name}' failed to conform to class '${clazz.name}'.`,
+        ),
+      ).value!,
     )
   }
 }

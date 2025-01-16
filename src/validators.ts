@@ -13,7 +13,7 @@ export interface InstanceValidator<T> {
 
 export type Predicate<T> = (...data: T[]) => boolean
 
-// An Obey of T validates using instances of T
+/** Validates using a callback predicate function. */
 export class Obeys<T> implements InstanceValidator<T> {
   constructor(public readonly param: Predicate<T>) {}
 
@@ -44,7 +44,7 @@ export class Obeys<T> implements InstanceValidator<T> {
 
           params.push(param)
         } catch (error) {
-          return MaybeError.fail((error as Error).message).conjoin(fail(params))
+          return MaybeError.fail((error as Error).message).and(fail(params))
         }
       }
 
@@ -56,7 +56,7 @@ export class Obeys<T> implements InstanceValidator<T> {
           return fail(params)
         }
       } catch (error) {
-        return MaybeError.fail((error as Error).message).conjoin(fail(params))
+        return MaybeError.fail((error as Error).message).and(fail(params))
       }
     }
 
@@ -64,6 +64,7 @@ export class Obeys<T> implements InstanceValidator<T> {
   }
 }
 
+/** Meta-validator ensures every sub-validator passes. */
 export class All<T> implements InstanceValidator<T> {
   constructor(public readonly param: InstanceValidator<T>[]) {}
 
@@ -71,16 +72,17 @@ export class All<T> implements InstanceValidator<T> {
     values: Generator<T>,
     options: ValidationOptions = {},
   ): ValidationResult {
-    const result = MaybeError.foldConjoin(
+    const result = MaybeError.foldAnd(
       this.param.map((val) => val.check(values, options)),
     )
 
     return result.isError()
-      ? result.conjoin(MaybeError.fail(`All constraint failed:`))
+      ? result.and(MaybeError.fail(`All constraint failed:`))
       : MaybeError.success()
   }
 }
 
+/** Meta-validator ensures at least one sub-validator passes. */
 export class Any<T> implements InstanceValidator<T> {
   constructor(public readonly param: InstanceValidator<T>[]) {}
 
@@ -88,12 +90,12 @@ export class Any<T> implements InstanceValidator<T> {
     values: Generator<T>,
     options: ValidationOptions = {},
   ): ValidationResult {
-    const result = MaybeError.foldDisjoin(
+    const result = MaybeError.foldOr(
       this.param.map((val) => val.check(values, options)),
     )
 
     return result.isError()
-      ? result.conjoin(MaybeError.fail(`Any constraint failed:`))
+      ? result.and(MaybeError.fail(`Any constraint failed:`))
       : MaybeError.success()
   }
 }
@@ -105,10 +107,10 @@ export class Any<T> implements InstanceValidator<T> {
  *
  * @example
  * ```javascript
- * obey(function commutativity(Instance, a, b) {
+ * obey(function commutativity(a, b) {
  *  // this property shall hold for any values a and b
- *  return a.add(b) === b.add(a)
- * })
+ *  return a.add(b) === b.add(a);
+ * });
  * ```
  */
 export function obey<T>(predicate: Predicate<T>) {
@@ -124,7 +126,7 @@ export function obey<T>(predicate: Predicate<T>) {
  * ```javascript
  * // assuming associativity, commutativity and identity are validators, this will return
  * // another validator that demands every one of those laws to be obeyed
- * all(associativity, commutativity, identity)
+ * all(associativity, commutativity, identity);
  * ```
  */
 export function all<T>(...laws: InstanceValidator<T>[]): InstanceValidator<T> {
@@ -140,7 +142,7 @@ export function all<T>(...laws: InstanceValidator<T>[]): InstanceValidator<T> {
  * ```
  * // assuming symmetry and antissymetry are validators, this will return another validator
  * // that demands at least one of those laws to be obeyed
- * any(symmetry, antisymmetry)
+ * any(symmetry, antisymmetry);
  * ```
  */
 export function any<T>(...laws: InstanceValidator<T>[]): InstanceValidator<T> {

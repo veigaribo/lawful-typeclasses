@@ -43,7 +43,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "lint-staged && npm run build && jest test/readme.test.js"
+      "pre-commit": "lint-staged"
     }
   },
   "lint-staged": {

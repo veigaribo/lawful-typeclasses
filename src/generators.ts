@@ -61,6 +61,7 @@ export class Discrete<T> extends Generator<T> {
 
   /**
    *
+   * @param name Name for reporting purposes
    * @param values A list of discrete values the constructor may assume.
    * @param random A function that generates pseudo-random numbers in the range [0, 1[.
    */
@@ -84,10 +85,11 @@ export class Discrete<T> extends Generator<T> {
  *
  * @example
  * ```
- * // a will be a random number, so the Foo value should be too
- * instance(Foo, bar, continuous((a) => new Foo(a)))
+ * // a will be a "random" number, so the Foo value should be "random" too
+ * instance('Foo', bar, continuous((a) => new Foo(a)))
  * ```
  *
+ * @param name
  * @param f
  * @param random
  * @returns
@@ -106,10 +108,12 @@ export function continuous<T>(
  * @example
  * ```
  * // random values will be sampled from that list
- * instance(Foo, bar, discrete([new Foo(1), new Foo(2), new Foo(3)]))
+ * instance('Foo', bar, discrete([new Foo(1), new Foo(2), new Foo(3)]))
  * ```
  *
+ * @param name
  * @param values
+ * @param random
  * @returns
  */
 export function discrete<T>(

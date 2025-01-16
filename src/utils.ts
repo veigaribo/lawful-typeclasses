@@ -22,7 +22,7 @@ export class MaybeError extends Maybe<string> {
   // error + error -> error
   // error + not error -> error
   // not error + not error -> not error
-  conjoin(other: MaybeError) {
+  and(other: MaybeError) {
     if (other.isError()) {
       if (this.isError()) {
         return new MaybeError(MaybeError.appendText(this.value!, other.value!))
@@ -37,7 +37,7 @@ export class MaybeError extends Maybe<string> {
   // error + error -> error
   // error + not error -> not error
   // not error + not error -> not error
-  disjoin(other: MaybeError) {
+  or(other: MaybeError) {
     if (other.isError()) {
       if (this.isError()) {
         return new MaybeError(MaybeError.appendText(this.value!, other.value!))
@@ -69,17 +69,11 @@ export class MaybeError extends Maybe<string> {
     return new MaybeError(text)
   }
 
-  static foldConjoin(maybeErrors: MaybeError[]) {
-    return maybeErrors.reduce(
-      (acc, res) => res.conjoin(acc),
-      MaybeError.success(),
-    )
+  static foldAnd(maybeErrors: MaybeError[]) {
+    return maybeErrors.reduce((acc, res) => res.and(acc), MaybeError.success())
   }
 
-  static foldDisjoin(maybeErrors: MaybeError[]) {
-    return maybeErrors.reduce(
-      (acc, res) => res.disjoin(acc),
-      MaybeError.fail(''),
-    )
+  static foldOr(maybeErrors: MaybeError[]) {
+    return maybeErrors.reduce((acc, res) => res.or(acc), MaybeError.fail(''))
   }
 }
