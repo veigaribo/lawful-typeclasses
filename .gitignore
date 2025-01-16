@@ -4,6 +4,7 @@ tsconfig.tsbuildinfo
 .log/
 
 lib/
+docs/
 
 # I use it to test stuff
 .ignore/

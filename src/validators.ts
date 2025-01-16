@@ -7,6 +7,7 @@ export interface ValidationOptions {
 
 export type ValidationResult = MaybeError
 
+/** Validates values of type T against any class. */
 export interface InstanceValidator<T> {
   check(values: Generator<T>, options?: ValidationOptions): ValidationResult
 }

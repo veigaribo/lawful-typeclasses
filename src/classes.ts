@@ -13,9 +13,9 @@ import {
  * Uses contravariance to convert an union type like `A | B | C` into an intersection type like
  * `A & B & C`.
  */
-type UnionToIntersection<U> = (U extends any ? (x: U) => void : never) extends (
-  x: infer I,
-) => void
+export type UnionToIntersection<U> = (
+  U extends any ? (x: U) => void : never
+) extends (x: infer I) => void
   ? I
   : never
 
@@ -23,15 +23,17 @@ type UnionToIntersection<U> = (U extends any ? (x: U) => void : never) extends (
  * Converts from e.g. `[A, B, C]` to `(A | B | C)[]`. `TypesOfClasses` doesn't handle tuples
  * well without this.
  */
-type ArrayFromTuple<T extends any[]> = T extends (infer U)[] ? U[] : never
+export type ArrayFromTuple<T extends any[]> = T extends (infer U)[]
+  ? U[]
+  : never
 
 /**
  * Given the type of an array (or tuple) of classes over different types, returns the intersection
  * of every inner type. Example: `[Class<A>, Class<B & C>]` becomes `A & B & C`
  */
-type TypesOfClasses<T extends Class<any>[]> = ArrayFromTuple<T> extends Class<
-  infer U
->[]
+export type TypesOfClasses<T extends Class<any>[]> = ArrayFromTuple<
+  T
+> extends Class<infer U>[]
   ? UnionToIntersection<U>
   : never
 
@@ -173,7 +175,8 @@ export class Class<T> {
   /**
    * Checks if something is an instance of this class.
    *
-   * @param Constructor
+   * @param values
+   * @param options
    * @returns
    */
   validate(
