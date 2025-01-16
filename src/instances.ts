@@ -1,4 +1,4 @@
-import { Class, ClassInput } from './classes'
+import { Class } from './classes'
 import { Generator } from './generators'
 import { MaybeError } from './utils'
 import { ValidationOptions } from './validators'
@@ -31,9 +31,9 @@ import { ValidationOptions } from './validators'
  *
  * @see {@link discrete}
  */
-export function instance<T extends any[]>(
+export function instance<T>(
   clazz: Class<T>,
-  values: Generator<ClassInput<T>>,
+  values: Generator<T>,
   options: ValidationOptions = {},
 ) {
   const result = clazz.validate(values, options)

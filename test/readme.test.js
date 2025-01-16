@@ -1,28 +1,28 @@
 test('readme examples work', () => {
   expect(() => {
     const {
-      Class,
+      ClassBuilder,
       continuous,
       discrete,
       obey,
       instance,
     } = require('../lib/index')
 
-    const eq = new Class({
-      name: 'Eq',
-    }).withLaws(
-      obey(function reflexivity(x) {
-        return x.equals(x)
-      }),
-    )
+    const eq = new ClassBuilder('Eq')
+      .withLaws(
+        obey(function reflexivity(x) {
+          return x.equals(x)
+        }),
+      )
+      .build()
 
     // our class is going to be an instance of Class
-    const addable = new Class({
+    const addable = new ClassBuilder(
       // this is what I've decided to name my class
       // this option is not necessary, but it helps to improve error messages
-      name: 'Addable',
-      extends: [eq],
-    })
+      'Addable',
+    )
+      .withParents(eq)
       // next, we define the properties we expect our instances to have.
       // we'll start out by using the `all` function to say that, in order to
       // be an Addable, the constructor must obey all of the following laws
@@ -43,6 +43,7 @@ test('readme examples work', () => {
           return a.equals(b)
         }),
       )
+      .build()
 
     class Number {
       constructor(n) {

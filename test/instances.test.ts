@@ -1,31 +1,47 @@
-import { Class, consolidate } from '../src/classes'
+import { expectTypeOf } from 'expect-type'
+import { ClassBuilder } from '../src/classes'
+import type { Class } from '../src/classes'
 import { continuous, discrete } from '../src/generators'
 import { instance } from '../src/instances'
 import { obey } from '../src/validators'
 
+// Eq
+
 interface Eq {
   equals(other: this): boolean
-}
-
-interface Show {
-  show(): void
 }
 
 const eqLaw = obey((instance: Eq) => {
   return instance.equals(instance)
 })
 
-const eq = new Class<[Eq]>().withLaws(eqLaw)
+const eq = new ClassBuilder('Eq')
+  .withType<Eq>()
+  .withParents()
+  .withLaws(eqLaw)
+  .build()
+
+expectTypeOf(eq).toEqualTypeOf<Class<Eq>>()
+
+// Show
+
+interface Show {
+  show(): void
+}
 
 const showLaw = obey((instance: Show) => {
   return instance.show() === undefined
 })
 
-const show = new Class<[Show]>().withLaws(showLaw)
+const show = new ClassBuilder('Show').withType<Show>().withLaws(showLaw).build()
+expectTypeOf(show).toEqualTypeOf<Class<Show>>()
 
-const showEq = new Class<[Eq, Show]>({
-  extends: consolidate(eq, show),
-})
+// ShowEq
+
+const showEq = new ClassBuilder('ShowEq').withParents(eq, show).build()
+expectTypeOf(showEq).toEqualTypeOf<Class<Show & Eq>>()
+
+//
 
 test('validate will throw if validation fails', () => {
   class VNumber implements Eq {

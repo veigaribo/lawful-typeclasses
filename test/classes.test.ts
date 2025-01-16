@@ -1,10 +1,11 @@
-import { Class, consolidate } from '../src/classes'
+import { expectTypeOf } from 'expect-type'
+import { Class, ClassBuilder } from '../src/classes'
 import { all, obey } from '../src/validators'
 
 test('each class will have its own id', () => {
-  const a = new Class({})
-  const b = new Class({})
-  const c = new Class({})
+  const a = new Class('A')
+  const b = new Class('B')
+  const c = new Class('C')
 
   expect(a.id).not.toEqual(b.id)
   expect(a.id).not.toEqual(c.id)
@@ -22,17 +23,21 @@ test('more complex `extends` values type-check fine', () => {
     c(): void
   }
 
-  let a = new Class<[A]>()
-  let b = new Class<[B]>()
-  let c = new Class<[C]>()
+  let a = new Class<A>('A')
+  let b = new Class<B>('B')
+  let c = new ClassBuilder('C').withType<C>().build()
 
-  let ab = new Class({
-    extends: consolidate(a, b),
-  }).withLaws(all(obey((x) => (x.a(), x.b(), true))))
+  let ab = new ClassBuilder('AB')
+    .withParents(a, b)
+    .withLaws(all(obey((x) => (x.a(), x.b(), true))))
+    .build()
 
-  consolidate(ab, c)
+  expectTypeOf(ab).toEqualTypeOf<Class<A & B>>()
 
-  new Class({
-    extends: consolidate(ab, c),
-  }).withLaws(all(obey((x) => (x.a(), x.b(), x.c(), true))))
+  expectTypeOf(
+    new ClassBuilder('ABC')
+      .withParents(ab, c)
+      .withLaws(all(obey((x) => (x.a(), x.b(), x.c(), true))))
+      .build(),
+  ).toEqualTypeOf<Class<A & B & C>>()
 })

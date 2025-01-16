@@ -9,46 +9,114 @@ import {
 } from './validators'
 
 // https://stackoverflow.com/a/50375286
-// Ultra clever
+/** Uses contravariance to convert an union type like `A | B | C` into an intersection type like
+ * `A & B & C`. */
 type UnionToIntersection<U> = (U extends any ? (x: U) => void : never) extends (
   x: infer I,
 ) => void
   ? I
   : never
 
-export type ClassInput<T extends any[]> = T extends (infer U)[]
+/** Converts from e.g. `[A, B, C]` to `(A | B | C)[]`. `ConsolidatedClasses` doesn't handle tuples
+ * well without this. */
+type ArrayFromTuple<T extends any[]> = T extends (infer U)[] ? U[] : never
+
+export type TypesOfClasses<T extends Class<any>[]> = ArrayFromTuple<
+  T
+> extends Class<infer U>[]
   ? UnionToIntersection<U>
   : never
 
-// Converts from e.g. `[A, B, C]` to `(A | B | C)[]`. `ConsolidatedClasses` doesn't handle tuples
-// well without this.
-type ArrayFromTuple<T extends any[]> = T extends (infer U)[] ? U[] : never
+/** Given the type of an array (or tuple) of classes over different types, create the type of a new
+ * array whose elements are classes whose types are unions of every type in the classes of the
+ * original array. Example: `[Class<A>, Class<B | C>]` becomes `Class<A | B | C>[]`. */
+export type ConsolidatedClasses<T extends Class<any>[]> = Class<
+  TypesOfClasses<T>
+>[]
 
-export type ConsolidatedClasses<T extends Class<any[]>[]> = ArrayFromTuple<
-  T
-> extends Class<(infer U)[]>[]
-  ? Class<U[]>[]
-  : never
+type IntersectNever<N, A> = [N] extends [never] ? A : N & A
 
-/** Transforms a list of distinct classes, such as `[Class<[A]>, Class<[B, C]>]` into an uniform
- * list of the form `[Class<(A | B | C)[]>, Class<(A | B | C)[]>, Class<(A | B | C)[]>]`. Use it
- * to generate an adequate value for `instance`.
+// TODO: Remove
+interface A {
+  a(): void
+}
+interface B {
+  b(): void
+}
+interface C {
+  c(): void
+}
+
+// type X = OwnAndParents<A, B | C>
+type X = TypesOfClasses<[Class<A>, Class<B & C>]>
+type Y = ConsolidatedClasses<[Class<A>, Class<B | C>]>
+
+/** Transforms a list of distinct classes, such as `[Class<A, never>, Class<B, C>]` into an uniform
+ * list of the form `Class<(A | B | C), never>[]`. Use it to generate an adequate value for `parents`.
  *
- * @see {@link instance}
+ * @see {@link ClassBuilder}
  * */
-export function consolidate<T extends Class<any[]>[]>(
+function consolidate<T extends Class<any>[]>(
   ...classes: T
 ): ConsolidatedClasses<T> {
   // WARNING: I claim this conversion works, but TypeScript will not help us with this.
   return (classes as unknown) as ConsolidatedClasses<T>
 }
 
-/** T should be an union of the types of every parent. */
-export interface ClassOptions<T extends Class<any>[]> {
-  /** The name will be used to improve error messages. */
-  name?: string
-  /** A list of classes that are prerequisites to this one. */
-  extends?: Class<T>[]
+export class ClassBuilder {
+  constructor(private name: string) {}
+
+  withName(name: string) {
+    return new ClassBuilder(name)
+  }
+
+  withType<T>(): ClassBuilder2<T> {
+    return new ClassBuilder2(this.name, [])
+  }
+
+  withParents<T extends Class<any>[]>(
+    ...parents: T
+  ): ClassBuilder2<TypesOfClasses<T>> {
+    return new ClassBuilder2(this.name, consolidate(...parents))
+  }
+
+  /** This function should only be used if TypeScript is not being used. Otherwise, call
+   * `withType` first. */
+  withLaws(validator: never): ClassBuilder2<never> {
+    return new ClassBuilder2(this.name, [], validator)
+  }
+
+  build(): Class<never> {
+    return new Class(this.name, [], all())
+  }
+}
+
+export class ClassBuilder2<T> {
+  constructor(
+    private name: string,
+    private parents: Class<T>[],
+    private laws?: InstanceValidator<T>,
+  ) {}
+
+  withName(name: string) {
+    return new ClassBuilder2(name, this.parents)
+  }
+
+  withParents<NewT extends Class<any>[]>(
+    ...parents: NewT
+  ): ClassBuilder2<T & TypesOfClasses<NewT>> {
+    return new ClassBuilder2(this.name, consolidate(...parents))
+  }
+
+  withLaws(
+    validator: [T] extends [never] ? never : InstanceValidator<T>,
+  ): ClassBuilder2<T> {
+    return new ClassBuilder2(this.name, this.parents, validator)
+  }
+
+  build(): Class<T> {
+    return new Class(this.name, this.parents, this.laws)
+  }
 }
 
 let idCounter = 0
@@ -73,30 +141,15 @@ let idCounter = 0
  *
  * @see {@link all}
  */
-export class Class<T extends any[]> {
-  public readonly parents: Class<T>[]
-  public readonly name: string
+export class Class<T> {
   public readonly id: number
 
-  private _laws: InstanceValidator<ClassInput<T>>[] = []
-
-  constructor(options: ClassOptions<T> = {}) {
-    const { extends: parents = [], name } = options
-
-    this.parents = parents
-    this.name = name || 'Unnamed'
+  constructor(
+    public readonly name: string,
+    public readonly parents: Class<T>[] = [],
+    public readonly laws: InstanceValidator<T> = all(),
+  ) {
     this.id = idCounter++
-  }
-
-  /** A validator that will check if a constructor is an instance of this class. */
-  withLaws(validator: InstanceValidator<ClassInput<T>>): this {
-    this._laws.push(validator)
-    return this
-  }
-
-  /** A dedicated method should be used for proper type inference from TypeScript */
-  getLaws(): InstanceValidator<ClassInput<T>> {
-    return all(...this._laws)
   }
 
   /**
@@ -106,7 +159,7 @@ export class Class<T extends any[]> {
    * @returns
    */
   validate(
-    values: Generator<ClassInput<T>>,
+    values: Generator<T>,
     options: ValidationOptions = {},
   ): ValidationResult {
     if (cache.contains(values, this)) {
@@ -115,14 +168,14 @@ export class Class<T extends any[]> {
 
     const result = MaybeError.foldConjoin([
       ...this.parents.map((parent) => parent.validate(values, options)),
-      this.getLaws().check(values, options),
+      this.laws.check(values, options),
     ])
 
     cache.set(values, this)
     return result
   }
 
-  equals(other: Class<T>) {
+  equals(other: Class<any>) {
     return this.id === other.id
   }
 }

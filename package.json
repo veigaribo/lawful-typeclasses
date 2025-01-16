@@ -32,6 +32,7 @@
   "license": "MIT",
   "devDependencies": {
     "@types/jest": "^26.0.14",
+    "expect-type": "^1.1.0",
     "husky": "^4.3.0",
     "jest": "^26.4.2",
     "lint-staged": "^10.4.0",
